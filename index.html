@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>搜着搜着，更焦虑了？——网络疑病症 × AI问诊安全工具</title>
+<meta name="description" content="认识网络疑病症（Cyberchondria）：成因、作用机制、测量评估与干预治理；内置一个以默沙东诊疗手册为验证锚点的 AI 问诊引导工具。本页面为健康信息科普与就诊准备工具，不构成医疗诊断。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F4D42'/%3E%3Ccircle cx='30' cy='30' r='12' fill='none' stroke='%23F6F3EC' stroke-width='5'/%3E%3Cpath d='M39 39l10 10' stroke='%23F6F3EC' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M24 38c2 3 6 3 8 0' stroke='%23C4543B' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ 设计系统 ============ */
+:root{
+  --paper:#F6F3EC;
+  --paper-2:#EFEADF;
+  --card:#FFFDF8;
+  --ink:#24332D;
+  --ink-2:#55635D;
+  --ink-3:#7C877F;
+  --pine:#1F4D42;
+  --pine-deep:#16392F;
+  --pine-soft:#E2EBE6;
+  --coral:#C4543B;
+  --coral-soft:#F7E3DC;
+  --sage:#6F8F83;
+  --sand:#EAE3D5;
+  --line:#DDD5C6;
+  --amber:#B7791F;
+  --amber-soft:#F6EDDA;
+  --shadow:0 1px 2px rgba(31,45,38,.05),0 10px 30px -14px rgba(31,45,38,.14);
+  --serif:"Noto Serif SC","Songti SC","SimSun",serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.75;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(rgba(31,77,66,.05) 1px,transparent 1px);
+  background-size:26px 26px;
+}
+img{max-width:100%;display:block}
+a{color:var(--pine);text-decoration:none}
+button{font-family:inherit}
+::selection{background:var(--pine-soft)}
+
+/* ============ 布局 ============ */
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+section{position:relative}
+.view{display:none}
+.view.active{display:block}
+.kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;letter-spacing:.14em;color:var(--pine);font-weight:700;
+  text-transform:uppercase;
+}
+.kicker::before{content:"";width:22px;height:2px;background:var(--coral)}
+h2.sec-title{font-family:var(--serif);font-size:clamp(26px,4vw,36px);font-weight:900;line-height:1.35;letter-spacing:.01em;margin:10px 0 8px}
+.sec-sub{color:var(--ink-2);font-size:15.5px;max-width:640px;font-weight:300}
+
+/* ============ 顶部导航 ============ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(246,243,236,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{max-width:1140px;margin:0 auto;padding:0 20px;height:60px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:900;font-size:17px;color:var(--ink);white-space:nowrap}
+.brand svg{flex:none}
+.nav-links{display:none;gap:4px;margin-left:auto}
+.nav-links a{padding:8px 12px;font-size:14.5px;color:var(--ink-2);border-radius:8px;transition:.2s;white-space:nowrap}
+.nav-links a:hover{color:var(--pine);background:var(--paper-2)}
+.nav-links a.active{color:var(--pine);font-weight:700}
+.nav-cta{
+  margin-left:auto;background:var(--pine);color:#fff;border:0;cursor:pointer;
+  padding:9px 16px;border-radius:10px;font-size:14px;font-weight:700;transition:.2s;
+}
+.nav-cta:hover{background:var(--pine-deep)}
+@media(min-width:860px){.nav-links{display:flex}.nav-cta{margin-left:0}}
+
+/* ============ 通用组件 ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:0;cursor:pointer;border-radius:12px;padding:13px 22px;
+  font-size:15.5px;font-weight:700;transition:.2s;line-height:1.2;
+}
+.btn-pine{background:var(--pine);color:#fff}
+.btn-pine:hover{background:var(--pine-deep);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--pine);border:1.5px solid var(--pine)}
+.btn-ghost:hover{background:var(--pine-soft)}
+.btn-coral{background:var(--coral);color:#fff}
+.btn-coral:hover{background:#a8432e}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:22px;box-shadow:var(--shadow);
+}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.02em}
+.tag-pine{background:var(--pine-soft);color:var(--pine)}
+.tag-coral{background:var(--coral-soft);color:var(--coral)}
+.tag-amber{background:var(--amber-soft);color:var(--amber)}
+.tag-sand{background:var(--sand);color:var(--ink-2)}
+
+/* ============ Hero ============ */
+.hero{padding:56px 0 64px;overflow:hidden}
+.hero-grid{display:grid;gap:36px;align-items:center}
+.hero h1{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(32px,5.4vw,52px);line-height:1.22;letter-spacing:.005em;margin:16px 0 16px;
+}
+.hero h1 em{font-style:normal;color:var(--coral)}
+.hero-lead{font-size:16.5px;color:var(--ink-2);font-weight:300;max-width:560px;margin-bottom:26px}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:30px}
+.hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:560px}
+.stat{border-left:3px solid var(--pine);padding:4px 0 4px 14px;background:rgba(255,253,248,.6);border-radius:0 10px 10px 0}
+.stat b{font-family:var(--serif);font-size:clamp(22px,3vw,28px);color:var(--pine);display:block;line-height:1.2}
+.stat span{font-size:12.5px;color:var(--ink-3)}
+.hero-art{position:relative}
+.hero-art img{border-radius:20px;box-shadow:var(--shadow);width:100%;height:auto}
+.hero-art .loop-badge{
+  position:absolute;left:-10px;bottom:-16px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);font-size:13px;color:var(--ink-2);
+  display:flex;align-items:center;gap:10px;max-width:250px;
+}
+@media(min-width:920px){
+  .hero-grid{grid-template-columns:1.05fr .95fr;gap:52px}
+  .hero{padding:72px 0 84px}
+}
+
+/* ============ 章节通用 ============ */
+.block{padding:56px 0}
+.block-tint{background:var(--paper-2)}
+.block-head{max-width:760px;margin-bottom:34px}
+.sec-rule{width:46px;height:4px;border-radius:2px;background:var(--coral);margin-bottom:14px}
+
+/* 概念区 */
+.concept-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:860px){.concept-grid{grid-template-columns:1.4fr 1fr}}
+.def-box{background:var(--pine);color:#F3EFE4;border-radius:16px;padding:26px 26px;position:relative;overflow:hidden}
+.def-box::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border:2px solid rgba(255,255,255,.12);border-radius:50%}
+.def-box .q{font-family:var(--serif);font-size:17.5px;line-height:1.85;font-weight:600}
+.def-box .src{font-size:12.5px;color:rgba(243,239,228,.72);margin-top:14px}
+.trait-list{display:grid;gap:12px}
+.trait{display:flex;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;align-items:flex-start}
+.trait .no{flex:none;width:30px;height:30px;border-radius:9px;background:var(--pine-soft);color:var(--pine);display:flex;align-items:center;justify-content:center;font-weight:900;font-family:var(--serif)}
+.trait b{display:block;font-size:15.5px}
+.trait span{font-size:13.5px;color:var(--ink-2)}
+
+/* 数据条 */
+.stats-band{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:760px){.stats-band{grid-template-columns:repeat(3,1fr)}}
+.big-stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 16px;box-shadow:var(--shadow)}
+.big-stat .num{font-family:var(--serif);font-weight:900;font-size:clamp(26px,3.4vw,36px);color:var(--pine);line-height:1.1}
+.big-stat .num small{font-size:.5em;font-weight:700;color:var(--ink-3)}
+.big-stat p{font-size:13.5px;color:var(--ink-2);margin-top:6px}
+.big-stat .src{font-size:11.5px;color:var(--ink-3);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+
+/* 成因网格 */
+.factor-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.factor-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.factor-grid{grid-template-columns:repeat(3,1fr)}}
+.factor{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 18px;box-shadow:var(--shadow);position:relative}
+.factor .fi{width:40px;height:40px;border-radius:11px;background:var(--pine-soft);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.factor h3{font-family:var(--serif);font-size:16.5px;font-weight:900;margin-bottom:6px}
+.factor p{font-size:13.5px;color:var(--ink-2)}
+.factor .evidence{font-size:12px;color:var(--ink-3);margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
+
+/* ISM 层级 */
+.ism{display:grid;gap:10px;max-width:760px;margin:0 auto}
+.ism-row{display:flex;align-items:center;gap:14px}
+.ism-label{flex:none;width:76px;font-size:12.5px;font-weight:700;letter-spacing:.05em;text-align:center;padding:8px 4px;border-radius:10px}
+.ism-l1 .ism-label{background:var(--coral);color:#fff}
+.ism-l2 .ism-label{background:var(--sage);color:#fff}
+.ism-l3 .ism-label{background:var(--pine);color:#fff}
+.ism-tags{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.ism-tags span{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:12.5px;color:var(--ink)}
+.ism-note{font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:12px;max-width:640px;margin-left:auto;margin-right:auto}
+
+/* 机制区 */
+.mech{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:760px){.mech{grid-template-columns:repeat(2,1fr)}}
+.mech-item{border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--card);box-shadow:var(--shadow)}
+.mech-item h3{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:16px;font-weight:900;margin-bottom:8px}
+.mech-item h3 .mn{flex:none;width:26px;height:26px;border-radius:8px;background:var(--pine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.mech-item p{font-size:13.5px;color:var(--ink-2)}
+.cycle-wrap{background:var(--pine-deep);border-radius:20px;padding:26px 18px;margin-bottom:34px;color:#F3EFE4}
+.cycle-wrap h3{font-family:var(--serif);font-size:19px;font-weight:900;text-align:center;margin-bottom:6px}
+.cycle-wrap .c-sub{text-align:center;font-size:13px;color:rgba(243,239,228,.75);margin-bottom:18px}
+.cycle-svg{max-width:640px;margin:0 auto}
+.cycle-notes{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+@media(min-width:700px){.cycle-notes{grid-template-columns:repeat(3,1fr)}}
+.cycle-note{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;font-size:12.5px;color:#E8E4D9}
+
+/* 测量区 */
+.tool-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow)}
+table.tool{width:100%;border-collapse:collapse;min-width:680px;table-layout:fixed}
+table.tool th,table.tool td{padding:14px 16px;text-align:left;font-size:13.5px;vertical-align:top;border-bottom:1px solid var(--line)}
+table.tool th{background:var(--pine);color:#fff;font-weight:700;font-size:13px;letter-spacing:.03em}
+table.tool td:first-child{font-weight:700;color:var(--ink)}
+table.tool tr:last-child td{border-bottom:0}
+table.tool .src-td{font-size:11.5px;color:var(--ink-3)}
+.measure-note{font-size:12.5px;color:var(--ink-3);margin-top:12px}
+.scale-hint{display:grid;gap:10px;grid-template-columns:1fr;margin-top:18px}
+@media(min-width:760px){.scale-hint{grid-template-columns:repeat(4,1fr)}}
+.hint-card{border-left:3px solid var(--sage);background:var(--card);border-radius:0 12px 12px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.hint-card b{display:block;font-size:14px;margin-bottom:2px}
+.hint-card span{font-size:12px;color:var(--ink-2)}
+
+/* 干预区 */
+.interv-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:860px){.interv-grid{grid-template-columns:repeat(3,1fr)}}
+.interv{border-radius:16px;padding:22px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
+.interv .iv-tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;margin-bottom:12px}
+.interv h3{font-family:var(--serif);font-size:16.5px;font-weight:900;margin-bottom:8px}
+.interv ul{list-style:none}
+.interv li{font-size:13.5px;color:var(--ink-2);padding:6px 0 6px 20px;position:relative;border-bottom:1px dashed var(--line)}
+.interv li:last-child{border-bottom:0}
+.interv li::before{content:"";position:absolute;left:2px;top:14px;width:7px;height:7px;border-radius:50%;background:var(--sage)}
+.iv-tag.a{background:var(--pine-soft);color:var(--pine)}
+.iv-tag.b{background:var(--amber-soft);color:var(--amber)}
+.iv-tag.c{background:var(--coral-soft);color:var(--coral)}
+
+/* 预防清单 */
+.prev-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:760px){.prev-grid{grid-template-columns:repeat(2,1fr)}}
+.prev-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.prev-card h3{display:flex;gap:10px;align-items:center;font-family:var(--serif);font-size:16px;font-weight:900;margin-bottom:10px}
+.prev-card h3 svg{flex:none}
+.prev-card ul{list-style:none}
+.prev-card li{font-size:13.5px;color:var(--ink-2);padding:7px 0 7px 22px;position:relative;border-bottom:1px dashed var(--line)}
+.prev-card li:last-child{border-bottom:0}
+.prev-card li::before{content:"✓";position:absolute;left:0;color:var(--pine);font-weight:700}
+
+/* ============ 问诊视图 ============ */
+.consult-hero{padding:44px 0 8px}
+.consult-head{max-width:820px;margin-bottom:26px}
+.consult-head h1{font-family:var(--serif);font-size:clamp(26px,4vw,38px);font-weight:900;line-height:1.3}
+.consult-head p{color:var(--ink-2);font-size:15px;margin-top:10px;font-weight:300}
+.disclaimer{
+  background:var(--amber-soft);border:1px solid #E3CDA0;border-radius:14px;
+  padding:14px 18px;font-size:13px;color:#6B5417;margin-bottom:26px;display:flex;gap:12px;
+}
+.disclaimer svg{flex:none;margin-top:2px}
+.tpl-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.tpl-grid{grid-template-columns:repeat(2,1fr)}}
+.tpl{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:22px;cursor:pointer;transition:.2s;text-align:left;display:block;width:100%}
+.tpl:hover{border-color:var(--pine);transform:translateY(-2px);box-shadow:var(--shadow)}
+.tpl .tpl-tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:99px;margin-bottom:12px}
+.tpl h3{font-family:var(--serif);font-size:17.5px;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.tpl p{font-size:13px;color:var(--ink-2)}
+.tpl .tpl-go{margin-top:14px;font-size:13px;font-weight:700;color:var(--pine);display:inline-flex;align-items:center;gap:6px}
+.tag-a{background:var(--pine-soft);color:var(--pine)}
+.tag-b{background:var(--amber-soft);color:var(--amber)}
+.tag-c{background:var(--coral-soft);color:var(--coral)}
+.tag-d{background:#E3E7F5;color:#4A5698}
+
+/* 表单 */
+.form-panel{max-width:760px;margin:0 auto}
+.form-back{background:none;border:0;color:var(--ink-2);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:6px 0}
+.form-back:hover{color:var(--pine)}
+.form-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow)}
+.form-card h2{font-family:var(--serif);font-size:22px;font-weight:900;margin-bottom:4px}
+.form-card .f-sub{font-size:13px;color:var(--ink-3);margin-bottom:22px}
+.f-group{margin-bottom:16px}
+.f-group label{display:block;font-size:13.5px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+.f-group .opt{font-size:12.5px;color:var(--ink-3);font-weight:400}
+.f-group input[type=text],.f-group input[type=number],.f-group textarea,.f-group select{
+  width:100%;padding:11px 13px;font-size:16px;border:1.5px solid var(--line);border-radius:11px;
+  background:#fff;color:var(--ink);font-family:inherit;transition:.15s;
+}
+.f-group textarea{min-height:84px;resize:vertical;line-height:1.6}
+.f-group input:focus,.f-group textarea:focus,.f-group select:focus{outline:none;border-color:var(--pine);box-shadow:0 0 0 3px rgba(31,77,66,.12)}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f-chip{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:1.5px solid var(--line);border-radius:99px;padding:8px 14px;cursor:pointer;font-size:13.5px;transition:.15s}
+.f-chip input{accent-color:var(--pine)}
+.f-chip.checked{border-color:var(--pine);background:var(--pine-soft);font-weight:600}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.form-submit{margin-top:22px;width:100%}
+
+/* 报告 */
+.report{max-width:820px;margin:0 auto}
+.report-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.report-head h2{font-family:var(--serif);font-size:24px;font-weight:900}
+.report-sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow)}
+.report-sec h3{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:16.5px;font-weight:900;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.report-sec h3 .rn{flex:none;width:26px;height:26px;border-radius:8px;background:var(--pine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-family:var(--sans)}
+.report-sec p,.report-sec li{font-size:14px;color:var(--ink);line-height:1.85}
+.report-sec ul{padding-left:0;list-style:none}
+.report-sec li{padding:5px 0 5px 20px;position:relative}
+.report-sec li::before{content:"";position:absolute;left:2px;top:15px;width:7px;height:7px;border-radius:50%;background:var(--sage)}
+.flag-list li::before{background:var(--coral)!important}
+.redline{background:var(--coral-soft);border:1px solid #E8B7A8;border-radius:12px;padding:12px 14px;margin-top:8px;font-size:13.5px;color:#7C2E1E}
+.veri-box{background:var(--pine-deep);border-radius:16px;padding:20px 22px;color:#F3EFE4;margin-top:16px}
+.veri-box h3{font-family:var(--serif);font-size:16px;font-weight:900;border-bottom:0;padding-bottom:0;color:#fff}
+.veri-box p{font-size:13px;color:rgba(243,239,228,.82);margin-bottom:14px}
+.veri-links{display:flex;flex-wrap:wrap;gap:10px}
+.veri-links a{
+  display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:10px;padding:9px 14px;
+  font-size:13.5px;font-weight:600;transition:.2s;
+}
+.veri-links a:hover{background:rgba(255,255,255,.2)}
+.veri-links .msd{background:var(--coral);border-color:var(--coral)}
+.veri-links .msd:hover{background:#a8432e}
+.report .again{margin-top:8px;background:none;border:0;color:var(--ink-2);cursor:pointer;font-size:14px;text-decoration:underline}
+.user-summary{background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink-2);margin-bottom:16px}
+.user-summary b{color:var(--ink)}
+
+/* ============ 自评视图 ============ */
+.self-wrap{max-width:760px;margin:0 auto}
+.self-q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
+.self-q .q-label{font-size:14px;font-weight:600;margin-bottom:10px}
+.self-q .q-dim{font-size:11.5px;color:var(--ink-3);margin-left:8px;font-weight:400}
+.self-opts{display:flex;gap:6px;flex-wrap:wrap}
+.self-opts button{
+  flex:1;min-width:56px;border:1.5px solid var(--line);background:#fff;border-radius:9px;
+  padding:9px 4px;font-size:13px;cursor:pointer;transition:.15s;color:var(--ink-2);
+}
+.self-opts button:hover{border-color:var(--pine)}
+.self-opts button.sel{border-color:var(--pine);background:var(--pine-soft);color:var(--pine);font-weight:700}
+.self-result{margin-top:22px}
+.self-score{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+@media(min-width:640px){.self-score{grid-template-columns:repeat(4,1fr)}}
+.score-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--shadow)}
+.score-card b{font-family:var(--serif);font-size:24px;color:var(--pine);display:block}
+.score-card span{font-size:12px;color:var(--ink-2)}
+.self-verdict{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);font-size:14px}
+
+/* ============ 来源视图 ============ */
+.source-list{display:grid;gap:10px;max-width:820px}
+.source-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:13.5px;display:flex;gap:12px;align-items:flex-start;box-shadow:var(--shadow)}
+.source-item .sn{flex:none;width:28px;height:28px;border-radius:8px;background:var(--pine-soft);color:var(--pine);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.source-item p{color:var(--ink)}
+.source-item .j{font-size:12px;color:var(--ink-3);margin-top:2px}
+.msd-enter{display:grid;gap:12px;grid-template-columns:1fr;margin-top:26px}
+@media(min-width:760px){.msd-enter{grid-template-columns:repeat(3,1fr)}}
+.msd-card{background:var(--pine);color:#F3EFE4;border-radius:16px;padding:20px;display:block;transition:.2s}
+.msd-card:hover{background:var(--pine-deep);transform:translateY(-2px)}
+.msd-card b{font-family:var(--serif);font-size:16px;display:block;margin-bottom:4px}
+.msd-card span{font-size:12.5px;color:rgba(243,239,228,.8)}
+
+/* ============ 页脚 ============ */
+.footer{border-top:1px solid var(--line);padding:40px 0 34px;margin-top:70px;background:var(--paper-2)}
+.footer-inner{max-width:1140px;margin:0 auto;padding:0 20px;display:grid;gap:20px}
+.footer .f-brand{font-family:var(--serif);font-weight:900;font-size:16px;display:flex;align-items:center;gap:10px}
+.footer p{font-size:12.5px;color:var(--ink-3);max-width:760px}
+.footer .warn{background:var(--coral-soft);border-radius:12px;padding:12px 16px;font-size:12.5px;color:#7C2E1E;border:1px solid #E8B7A8}
+
+/* 响应式：小屏 */
+@media(max-width:520px){
+  .f-row{grid-template-columns:1fr}
+  .brand span.t{font-size:15px}
+  .self-opts button{min-width:46px;padding:9px 2px;font-size:12px}
+}
+@media(max-width:420px){
+  .hero-stats{grid-template-columns:1fr}
+}
+@media print{
+  .nav,.nav-cta{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#home" data-route="home">
+      <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1F4D42"/><circle cx="30" cy="30" r="12" fill="none" stroke="#F6F3EC" stroke-width="5"/><path d="M39 39l10 10" stroke="#F6F3EC" stroke-width="5" stroke-linecap="round"/><path d="M24 38c2 3 6 3 8 0" stroke="#C4543B" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+      <span class="t">网络疑病症 · 信息素养</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#home" data-route="home" class="active">知识库</a>
+      <a href="#consult" data-route="consult">AI 问诊</a>
+      <a href="#selfcheck" data-route="selfcheck">自评自查</a>
+      <a href="#sources" data-route="sources">文献与来源</a>
+    </div>
+    <button class="nav-cta" data-route="consult" onclick="go('consult')">进入 AI 问诊</button>
+  </div>
+</nav>
+
+<main>
+<!-- ===== 视图：首页知识库 ===== -->
+<div class="view active" id="view-home" data-view="home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="kicker">AI + 信息素养 · 心理健康科普</span>
+        <h1>搜着搜着，<em>怎么更焦虑了？</em></h1>
+        <p class="hero-lead">网络疑病症（Cyberchondria）——一种被「在线搜索」放大的健康焦虑。这里有理有据的知识、可自查的量表，还有一个不会顺着你焦虑往下说的 AI 问诊整理助手。</p>
+        <div class="hero-ctas">
+          <button class="btn btn-coral" onclick="go('consult')">开始 AI 问诊</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('concept').scrollIntoView({behavior:'smooth'})">先读知识库</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><b>约 40%</b><span>在线搜索健康信息后，焦虑程度反而上升的人群比例（White &amp; Horvitz, 2009）</span></div>
+          <div class="stat"><b>70%</b><span>起初搜索无害普通症状的人，会逐渐转向搜索稀有与更严重的疾病（Muse 等, 2012）</span></div>
+          <div class="stat"><b>75%</b><span>用户曾把搜索结果排名与「患病可能性」混淆（White &amp; Horvitz, 2009）</span></div>
+          <div class="stat"><b>r = 0.51</b><span>大学生网络疑病与健康焦虑得分的正相关（金童林等, 2020）</span></div>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img src="assets/hero.png" alt="扁平插画：一名女性在电脑前搜索健康信息，周围环绕放大镜、心电图、药片等元素，神情忧虑" width="1536" height="1024">
+        <div class="loop-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C4543B" stroke-width="2" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3v4h-4"/></svg>
+          搜索 → 焦虑 → 再搜索：一个难以跳出的循环
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 概念 -->
+  <section class="block" id="concept">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">它是什么</span>
+        <h2 class="sec-title">网络疑病症：不是「想太多」，而是被机制放大的循环</h2>
+        <p class="sec-sub">一个词源于 1999 年《华尔街日报》的概念，如今已覆盖全球数以亿计的在线健康信息搜索者。</p>
+      </div>
+      <div class="concept-grid">
+        <div class="def-box">
+          <p class="q">“出于对健康的困扰或焦虑，在网上过度或重复搜索和健康相关的信息，结果扩大了这种困扰或焦虑的症状。”</p>
+          <p class="src">——丁佳丽、杨智辉（2015）《网络疑病症：概念界定、影响因素与干预方法》综合代表性定义后的界定</p>
+        </div>
+        <div class="trait-list">
+          <div class="trait"><div class="no">1</div><div><b>行为过度</b><span>重复、耗时、停不下来，远超「查一次了解情况」的需要</span></div></div>
+          <div class="trait"><div class="no">2</div><div><b>结果负面</b><span>搜索后更担忧、更焦虑，而不是获得安心</span></div></div>
+          <div class="trait"><div class="no">3</div><div><b>方向相反</b><span>焦虑增加后仍继续搜索，与健康焦虑、DSM-5 疾病焦虑障碍症状相近</span></div></div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-3);margin-top:16px">说明：网络疑病症并非正式的临床诊断术语，而被视为互联网环境下普遍存在的一种焦虑现象（肖鹏、张雨龙，2025）；它与「网络成瘾」有相似性，但核心差异在于其驱动是健康焦虑而非对网络本身的依赖（丁佳丽，2015）。</p>
+    </div>
+  </section>
+
+  <!-- 核心数据 -->
+  <section class="block block-tint">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">数据地图</span>
+        <h2 class="sec-title">它有多普遍？</h2>
+      </div>
+      <div class="stats-band">
+        <div class="big-stat"><div class="num">72.1%<small> / 71.7%</small></div><p>大学生反复搜索健康信息后「更担忧」「更焦虑」的比例（金童林等, 2020）</p><div class="src">来源：金童林等《中文版简式网络疑病量表测评大学生群体的信度与效度》</div></div>
+        <div class="big-stat"><div class="num">55.6%</div><p>一项针对印度 IT 员工的研究中，网络疑病症的发生率（Makarla 等, 2019）</p><div class="src">来源：金童林等（2020）引述</div></div>
+        <div class="big-stat"><div class="num">45%</div><p>个体花费大量时间反复搜索疑似症状；45% 搜索后立即寻求医生建议（Ivanova, 2013）</p><div class="src">来源：金童林等（2020）引述</div></div>
+        <div class="big-stat"><div class="num">≥ 1/3</div><p>个体经常搜索「与自己相似的个案治疗经验」或「医学诊断经验」（Ivanova, 2013）</p><div class="src">来源：金童林等（2020）引述</div></div>
+        <div class="big-stat"><div class="num">60%</div><p>中国网民中会利用网络搜索健康、医疗、疾病信息的人群比例（2010 年 12 国调查）</p><div class="src">来源：丁佳丽、杨智辉（2015）</div></div>
+        <div class="big-stat"><div class="num">1.09</div><p>网络 CBT 干预后网络疑病评分的效应量（Hedges g），显著优于对照组（Newby &amp; McElroy, 2020）</p><div class="src">来源：Menon 等（2020）综述</div></div>
+      </div>
+    </div>
+  </section>
+
+<!-- ===== 成因 ===== -->
+  <section class="block" id="causes">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">成因</span>
+        <h2 class="sec-title">哪些因素把「搜索」变成了「疑病」？</h2>
+        <p class="sec-sub">心理特质、认知方式与信息环境共同作用。下面前六项来自丁佳丽与杨智辉（2015）的系统梳理，后两项来自近年实证研究。</p>
+      </div>
+      <div class="factor-grid">
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-4.6-9.3-9A5.6 5.6 0 0 1 12 6a5.6 5.6 0 0 1 9.3 6C19 16.4 12 21 12 21z"/></svg></div>
+          <h3>健康焦虑（起点）</h3>
+          <p>对躯体感觉做「最坏解释」的倾向。高健康焦虑者更频繁、更久地搜索健康信息，并从搜索中体验到更多消极结果——它是网络疑病最重要的前因。</p>
+          <div class="evidence">证据：健康焦虑是大学生网络疑病的主要成因之一（Te Poel 等, 2016 纵向研究）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>无法忍受不确定性（IU）</h3>
+          <p>对「未知」高度敏感的个体，会因网上模糊的术语、矛盾的结论而更焦虑，为找到「确定的真相」持续搜索——不确定性反而被信息放大。</p>
+          <div class="evidence">证据：IU 在搜索频率与健康焦虑间起调节作用（Fergus, 2013）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M12 3l2.7 5.7 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3 1.2-6.2L3 9.5l6.3-.8z"/></svg></div>
+          <h3>完美主义特质</h3>
+          <p>希望搜索到「能解释一切」的信息。面对互相矛盾的结果，宁可忍受焦虑也要找到完美答案，于是搜索难以停止。</p>
+          <div class="evidence">证据：疑病症群体中常见完美主义与强迫型人格特征（Sakai 等, 2010）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+          <h3>认知偏向（三重放大）</h3>
+          <p>注意偏向：优先看到严重疾病；解释偏向：把模糊症状解读为重病；记忆偏向：只记得消极结果。三者共同把普通症状「放大」。</p>
+          <div class="evidence">证据：焦虑易感人群普遍存在消极注意/解释/记忆偏向（MacLeod &amp; Mathews, 2012）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+          <h3>信息可信度知觉</h3>
+          <p>网络信息鱼龙混杂。个体花大量时间辨别真伪，而「是否信任某个网站」会改变搜索后的焦虑走向——信任的网站反而可能带来更高担忧。</p>
+          <div class="evidence">证据：仅从信任网站获取信息时，健康焦虑者搜索后担忧更高（Baumgartner &amp; Hartmann, 2011）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="19" cy="18" r="3"/></svg></div>
+          <h3>搜索排名与技术</h3>
+          <p>严重疾病内容点击多→排名靠前→被更多人看到→更焦虑→再点击。排名算法放大了「恐惧信息」的可见度，用户却常把排名当概率。</p>
+          <div class="evidence">证据：至少 75% 用户混淆排名与患病可能性（White &amp; Horvitz, 2009）</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/></svg></div>
+          <h3>健康信息过载</h3>
+          <p>信息太多、互相冲突，超过个体的处理能力。过载通过「问题性网络使用」与「心理不适」的独立及链式中介，推高网络疑病水平。</p>
+          <div class="evidence">证据：肖鹏 &amp; 张雨龙（2025）「久搜何以成疾」研究模型</div>
+        </div>
+        <div class="factor">
+          <div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 0 1 9 9c0 4-3 7-9 7a9 9 0 0 1 0-16z"/><path d="M9 9c1.5-1 4.5-1 6 0M9 13c1.5 1 4.5 1 6 0"/></svg></div>
+          <h3>元认知信念</h3>
+          <p>「担心疾病能保我安全」「我永远控制不了自己的担忧」这类关于思考的信念，即使没有既往健康焦虑，也能催生网络疑病。</p>
+          <div class="evidence">证据：Fergus &amp; Spada（2018）元认知模型；李少华（ISM 研究）另发现家庭功能、AI 技术异常使用等新因素</div>
+        </div>
+      </div>
+
+      <div style="margin-top:44px">
+        <h3 style="font-family:var(--serif);font-weight:900;font-size:20px;margin-bottom:6px">因素的分层：哪些是「根」，哪些是「果」？</h3>
+        <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:20px">李少华（2023）用解释结构模型（ISM）+ 交叉影响矩阵（MICMAC）把 18 个因素梳理成三层递阶结构——治理要从「根源层」入手。</p>
+        <div class="ism">
+          <div class="ism-row ism-l3"><div class="ism-label">直接层</div><div class="ism-tags"><span>信息反刍</span><span>信息依赖</span><span>信息茧房</span><span>信息交互氛围</span></div></div>
+          <div class="ism-row ism-l2"><div class="ism-label">中间层</div><div class="ism-tags"><span>信息过载</span><span>个性化推荐</span><span>信息来源与质量</span><span>主观感知</span><span>信息框架</span><span>个体特质</span><span>搜索行为</span><span>就医行为</span><span>AI 技术异常使用</span></div></div>
+          <div class="ism-row ism-l1"><div class="ism-label">根源层</div><div class="ism-tags"><span>健康信息素养</span><span>平台监管环境</span><span>医疗可及性</span><span>家庭功能</span></div></div>
+        </div>
+        <p class="ism-note">根源层 = 高驱动力因素：干预健康信息素养、平台监管、医疗可及性与家庭功能，能同时撬动多条中间与直接路径（李少华，2023）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 机制 ===== -->
+  <section class="block block-tint" id="mechanism">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">作用机制</span>
+        <h2 class="sec-title">为什么「越查越怕，越怕越查」？</h2>
+        <p class="sec-sub">四条实证路径 + 一个自维持循环，解释网络疑病的「黏性」。</p>
+      </div>
+
+      <div class="cycle-wrap">
+        <h3>网络疑病循环：一个会自我强化的环</h3>
+        <p class="c-sub">Health anxiety → Search → Anxiety ↑ → Search again</p>
+        <div class="cycle-svg">
+          <svg viewBox="0 0 640 300" role="img" aria-label="搜索焦虑循环示意图">
+            <defs>
+              <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#C4543B"/></marker>
+            </defs>
+            <path d="M320 46 L500 118" stroke="#C4543B" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+            <path d="M500 182 L320 254" stroke="#C4543B" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+            <path d="M140 182 L320 254" stroke="#C4543B" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+            <path d="M320 46 L140 118" stroke="#C4543B" stroke-width="2.5" fill="none" marker-end="url(#arr)"/>
+            <g>
+              <rect x="252" y="18" width="136" height="56" rx="14" fill="#C4543B"/>
+              <text x="320" y="52" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="sans-serif">健康焦虑触发</text>
+            </g>
+            <g>
+              <rect x="444" y="94" width="136" height="56" rx="14" fill="#1F4D42"/>
+              <text x="512" y="128" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="sans-serif">在线搜索</text>
+            </g>
+            <g>
+              <rect x="444" y="188" width="136" height="56" rx="14" fill="#1F4D42"/>
+              <text x="512" y="222" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="sans-serif">信息过载·矛盾</text>
+            </g>
+            <g>
+              <rect x="120" y="188" width="136" height="56" rx="14" fill="#1F4D42"/>
+              <text x="188" y="222" text-anchor="middle" fill="#fff" font-size="17" font-weight="700" font-family="sans-serif">焦虑与担忧上升</text>
+            </g>
+            <g>
+              <rect x="120" y="94" width="136" height="56" rx="14" fill="#F6F3EC" stroke="#1F4D42" stroke-width="2"/>
+              <text x="188" y="128" text-anchor="middle" fill="#1F4D42" font-size="17" font-weight="700" font-family="sans-serif">为安心再次搜索</text>
+            </g>
+            <text x="320" y="292" text-anchor="middle" fill="#E8E4D9" font-size="12.5" font-family="sans-serif">循环一旦建立，即使搜索不带来安慰，行为也难以停止（丁佳丽 &amp; 杨智辉, 2015）</text>
+          </svg>
+        </div>
+        <div class="cycle-notes">
+          <div class="cycle-note"><b>约 40%</b> 的人搜索后焦虑上升；约 50% 下降——结果不可预料，但焦虑上升者仍可能继续搜索，形成网络疑病。</div>
+          <div class="cycle-note"><b>70%</b> 的人会从普通无害症状滑向搜索稀有、严重疾病——搜索内容越来越「危险」。</div>
+          <div class="cycle-note"><b>纵向证据</b>：健康焦虑与在线健康信息寻求互为因果，互相喂养（Te Poel 等, 2016）。</div>
+        </div>
+      </div>
+
+      <div class="mech">
+        <div class="mech-item">
+          <h3><span class="mn">M1</span>寻求安心，反被吓到</h3>
+          <p>搜索本为「求安心」，但结果不可控——看到坏消息后焦虑升高；而少数一次「安心」的体验会强化下次再来搜索的行为（Salkovskis 认知—行为模型）。这是循环最底层的动力。</p>
+        </div>
+        <div class="mech-item">
+          <h3><span class="mn">M2</span>排名的「恐惧放大器」</h3>
+          <p>用户倾向点击排名靠前的链接，严重疾病内容因高点击排名更靠前，形成「越吓人越靠前、越靠前越被看」的正反馈。个体把排序当概率，普通症状也被解读为罕见病。</p>
+        </div>
+        <div class="mech-item">
+          <h3><span class="mn">M3</span>情绪与搜索的恶性循环</h3>
+          <p>网络疑病与焦虑、抑郁、压力显著正相关（r = 0.27~0.34）；负性情绪反过来又推动继续搜索，主观上维持了疑病倾向（金童林等, 2020）。</p>
+        </div>
+        <div class="mech-item">
+          <h3><span class="mn">M4</span>过载的双重路径</h3>
+          <p>健康信息过载一方面经「问题性网络使用」、另一方面经「心理不适」推高网络疑病（独立中介 + 链式中介）；电子健康素养高者可缓冲这一影响（肖鹏 &amp; 张雨龙, 2025）。另一路径：过载经反刍思考与健康信息回避传导（王浩宇等）。</p>
+        </div>
+        <div class="mech-item">
+          <h3><span class="mn">M5</span>元认知：想法的「开关」</h3>
+          <p>积极元认知（「担心疾病能保我安全」）与消极元认知（「思维—疾病融合」「我控制不了担忧」）是发展的认知基础；「何时停止搜索」的自我规则（stop rules）则是维持因素（Fergus &amp; Spada, 2018）。</p>
+        </div>
+        <div class="mech-item">
+          <h3><span class="mn">M6</span>信息环境的加速器</h3>
+          <p>个性化推荐与信息茧房让「恐惧内容」反复出现在信息流中；平台推荐算法、AI 健康问答的异常使用，作为环境因素放大个体焦虑（李少华, 2023；周依萌, 扎根理论）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 测量 ===== -->
+  <section class="block" id="measure">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">测量评估</span>
+        <h2 class="sec-title">研究者如何「测量」它？</h2>
+        <p class="sec-sub">目前没有临床诊断标准，但已有多个经过信效度检验的自评工具。最常用的是《网络疑病严重度量表》（CSS）及其简版。</p>
+      </div>
+      <div class="tool-table-wrap">
+        <table class="tool">
+          <colgroup><col style="width:22%"><col style="width:30%"><col style="width:30%"><col style="width:18%"></colgroup>
+          <thead><tr><th>工具</th><th>结构与题量</th><th>测量学指标</th><th>中文版</th></tr></thead>
+          <tbody>
+            <tr><td>CSS-33<br>网络疑病严重度量表</td><td>33 条目 · 5 维度：冲动、痛苦、过度搜索、寻求专业帮助、质疑医学援助（McElroy &amp; Shevlin, 2014）</td><td>内部一致性 α = 0.94；与健康焦虑、压力正相关</td><td class="src-td">未广泛汉化，部分维度（质疑医学援助）建议不计入总分</td></tr>
+            <tr><td>CSS-12<br>简式网络疑病量表</td><td>12 条目 · 4 维度：过度关注、搜索焦虑、寻求帮助、负面干扰，5 点计分（McElroy 等, 2019）</td><td>信效度良好；与 SHAI、IUS、DASS-21 正相关</td><td class="src-td">已有中文版（金童林等, 2020），见下</td></tr>
+            <tr><td>CSS-15</td><td>15 条目版本，从 5 个原始维度各取 3 条（Jelenchick 等）</td><td>结构效度良好</td><td class="src-td">—</td></tr>
+            <tr><td>4 条极短量表</td><td>仅 4 条目的筛查性工具</td><td>适合快速筛查，信息量有限</td><td class="src-td">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="scale-hint">
+        <div class="hint-card"><b>中文版 CCSS-12 信度</b><span>Cronbach's α = 0.83~0.92；分半信度 0.76~0.79；重测信度 0.73~0.85（金童林等, 2020）</span></div>
+        <div class="hint-card"><b>效标关联效度</b><span>与健康焦虑 r = 0.51、无法忍受不确定性 r = 0.39、焦虑 r = 0.34（均 p &lt; .01）</span></div>
+        <div class="hint-card"><b>结构效度</b><span>四因素模型拟合良好：CFI = 0.97，RMSEA = 0.07，总解释率 80.1%</span></div>
+        <div class="hint-card"><b>配合工具</b><span>常与 SHAI（短版健康焦虑问卷）、IUS-12、DASS-21 联用</span></div>
+      </div>
+      <p class="measure-note">你也可以到「自评自查」页，用参考 CSS-12 维度结构设计的 12 题做一次自我了解——它不是正式量表，不替代专业评估。</p>
+    </div>
+  </section>
+
+  <!-- ===== 干预治理 ===== -->
+  <section class="block block-tint" id="intervention">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">干预 / 治理</span>
+        <h2 class="sec-title">三层干预：技术、教育与心理</h2>
+        <p class="sec-sub">丁佳丽与杨智辉（2015）提出干预可从三个层面入手；近年 iCBT 与「减少危害」策略提供了更具体的证据。</p>
+      </div>
+      <div class="interv-grid">
+        <div class="interv">
+          <span class="iv-tag a">第一层 · 网络技术</span>
+          <h3>让「信息流」更可信</h3>
+          <ul>
+            <li>搜索引擎把「专业性与可靠性」纳入排名算法，降低恐惧内容曝光</li>
+            <li>平台监管健康信息质量，减少不准确、误导、过时的内容</li>
+            <li>开发科学的健康咨询系统，替代「症状进搜索框」</li>
+            <li>个性化推荐增加克制机制，避免信息茧房式焦虑喂养</li>
+          </ul>
+        </div>
+        <div class="interv">
+          <span class="iv-tag b">第二层 · 用户教育</span>
+          <h3>提升健康信息素养</h3>
+          <ul>
+            <li>学会评估信息源：优先权威来源（如默沙东诊疗手册、机构指南）</li>
+            <li>降低对网络的期望：网络给「信息」，不负责给「安心」</li>
+            <li>批判性看待搜索结果：排序 ≠ 概率，矛盾结论 ≠ 你患病</li>
+            <li>电子健康素养高者，能缓冲信息过载对疑病的影响（肖鹏等）</li>
+          </ul>
+        </div>
+        <div class="interv">
+          <span class="iv-tag c">第三层 · 心理干预</span>
+          <h3>循证心理疗法</h3>
+          <ul>
+            <li>认知行为疗法（CBT）：健康焦虑的循证金标准，效应量大（Cochrane g = −0.86）</li>
+            <li>网络化 CBT（iCBT）：6~12 模块在线完成，网络疑病评分显著下降（g = 1.09）</li>
+            <li>暴露与反应阻止：减少「反复查证、寻求保证」行为</li>
+            <li>认知偏向矫正、正念与接纳承诺（ACT）作为补充方向</li>
+            <li>药物仅限医生处方：SSRI 证据有限，与 CBT 疗效相当（不自行用药）</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="font-family:var(--serif);font-weight:900;font-size:20px;margin:42px 0 6px">个人可以立即做的「减少危害」清单</h3>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:20px">参考预防策略（Menon 等, 2020）与「供需双侧」思路整理——先管住行为，再处理情绪。</p>
+      <div class="prev-grid">
+        <div class="prev-card">
+          <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>管住搜索行为</h3>
+          <ul>
+            <li>给搜索设上限：每天最多 1 次、每次 15 分钟，并设「停止规则」</li>
+            <li>只查 1~2 个权威来源（如默沙东诊疗手册），不横向铺开</li>
+            <li>搜索前写下「我想确认什么」，避免开放式浏览</li>
+            <li>用「记录症状 + 就诊提问」代替「搜答案」</li>
+          </ul>
+        </div>
+        <div class="prev-card">
+          <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F4D42" stroke-width="2" stroke-linecap="round"><path d="M12 21s-7-4.6-9.3-9A5.6 5.6 0 0 1 12 6a5.6 5.6 0 0 1 9.3 6C19 16.4 12 21 12 21z"/></svg>照顾情绪与就医</h3>
+          <ul>
+            <li>区分「信息」与「保证」：网络给信息，安心来自专业评估</li>
+            <li>焦虑持续、影响生活时，主动寻求心理科/精神科评估</li>
+            <li>把担忧写下来带去医院，比反复搜索更有效</li>
+            <li>识别错误前提：普通不适 ≠ 严重疾病，先看常见原因</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== 视图：AI 问诊 ===== -->
+<div class="view" id="view-consult" data-view="consult">
+  <section class="consult-hero">
+    <div class="wrap">
+      <div class="consult-head">
+        <span class="kicker">AI 问诊整理助手</span>
+        <h1>填一个模板，得到一份「去就诊前」的整理稿</h1>
+        <p>它不诊断、不开药、不顺着你的焦虑说。它只做三件事：把你的情况整理成医生看得懂的结构、标出该警惕的「红旗信号」、并给出默沙东诊疗手册（MSD Manuals）的核对入口。</p>
+      </div>
+      <div class="disclaimer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B5417" stroke-width="2" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <div><b>安全边界：</b>本工具是「信息整理助手」而非医生。输出内容用于辅助你准备就诊，不能替代面诊。遇到「红旗信号」中的表现，请直接前往急诊或就医。</div>
+      </div>
+      <div id="consultFlow">
+        <!-- 步骤1：模板选择 -->
+        <div id="step-tpl">
+          <div class="tpl-grid" id="tplGrid"></div>
+        </div>
+        <!-- 步骤2：表单 -->
+        <div id="step-form" style="display:none"></div>
+        <!-- 步骤3：报告 -->
+        <div id="step-report" style="display:none"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== 视图：自评 ===== -->
+<div class="view" id="view-selfcheck" data-view="selfcheck">
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">测量评估</span>
+        <h2 class="sec-title">在线自查：你的「搜索—焦虑」循环有多紧？</h2>
+        <p class="sec-sub">以下 12 题参考《简式网络疑病量表》（CSS-12，McElroy 等，2019）的四个维度结构（过度关注、搜索焦虑、寻求帮助、负面干扰）自编，仅作自我了解，不是正式心理量表，也不构成任何诊断。</p>
+      </div>
+      <div class="self-wrap">
+        <div id="selfQs"></div>
+        <div style="text-align:center;margin-top:8px">
+          <button class="btn btn-pine" onclick="calcSelf()">查看结果</button>
+          <button class="btn btn-ghost" onclick="resetSelf()" style="margin-left:10px">重新作答</button>
+        </div>
+        <div class="self-result" id="selfResult"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== 视图：来源 ===== -->
+<div class="view" id="view-sources" data-view="sources">
+  <section class="block">
+    <div class="wrap">
+      <div class="block-head">
+        <span class="kicker">证据与出处</span>
+        <h2 class="sec-title">每一条结论，都可追溯到文献</h2>
+        <p class="sec-sub">本页知识库内容基于以下知网文献整理（保存于「网络疑病症 + 健康焦虑 + Cyberchondria」资料夹），AI 问诊的验证入口指向《默沙东诊疗手册》。</p>
+      </div>
+      <div class="source-list" id="sourceList"></div>
+      <h3 style="font-family:var(--serif);font-weight:900;font-size:20px;margin:34px 0 6px">直达《默沙东诊疗手册》（MSD Manuals）</h3>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-bottom:16px">1899 年首版，全球使用最广泛的医学信息资源之一，中文站向专业人士与大众免费开放。</p>
+      <div class="msd-enter">
+        <a class="msd-card" href="https://www.msdmanuals.cn/" target="_blank" rel="noopener"><b>默沙东诊疗手册 · 首页</b><span>选择「大众版」或「专业版」入口</span></a>
+        <a class="msd-card" href="https://www.msdmanuals.cn/home" target="_blank" rel="noopener"><b>大众版（家庭版）</b><span>面向患者、家属与照护者，通俗易懂</span></a>
+        <a class="msd-card" href="https://www.msdmanuals.cn/professional" target="_blank" rel="noopener"><b>医学专业人士版</b><span>面向从业人员与医学生，内容更深</span></a>
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<!-- ===== 页脚 ===== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="f-brand">
+      <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1F4D42"/><circle cx="30" cy="30" r="12" fill="none" stroke="#F6F3EC" stroke-width="5"/><path d="M39 39l10 10" stroke="#F6F3EC" stroke-width="5" stroke-linecap="round"/></svg>
+      网络疑病症 · AI 信息素养工具
+    </div>
+    <div class="warn">重要声明：本页面用于健康信息科普与就诊准备，所有医学相关内容仅作信息参考，不构成诊断、治疗或处方建议。任何健康问题请咨询合格医生；紧急情况（呼吸困难、意识改变、剧烈胸痛、大出血、持续高热等）请立即就医或拨打 120。AI 问诊输出为规则化整理，无法替代专业判断。</div>
+    <p>页面知识库依据：丁佳丽 &amp; 杨智辉（2015）《中国全科医学》；金童林等（2020）《中国临床心理学杂志》；肖鹏 &amp; 张雨龙（2025）《新闻记者》；李少华（ISM-MICMAC 研究）；Menon 等（2020）《Asian Journal of Psychiatry》综述；McElroy 等（2014, 2019）；以及资料夹内其余知网文献。具体条目见「文献与来源」页。</p>
+  </div>
+</footer>
+
+<!-- ===== SCRIPT: 交互引擎 ===== -->
+<script>
+(function(){
+"use strict";
+
+/* ---------- 工具 ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function msdHome(){return "https://www.msdmanuals.cn/home";}
+function msdLinks(kws,hit){
+  var list=(kws||[]).filter(function(k){return k&&k.trim();}).slice(0,4);
+  var html='<div class="veri-links">';
+  if(hit&&hit.msd){
+    html+='<a class="msd" href="'+hit.msd+'" target="_blank" rel="noopener">在默沙东查阅「'+esc(hit.name)+'」</a>';
+  }
+  list.forEach(function(k){
+    if(hit&&k===hit.name)return;
+    html+='<a href="'+msdHome()+'" target="_blank" rel="noopener">在默沙东首页搜索「'+esc(k)+'」</a>';
+  });
+  html+='<a href="'+msdHome()+'" target="_blank" rel="noopener">大众版首页</a>';
+  html+='<a href="https://www.msdmanuals.cn/professional" target="_blank" rel="noopener">专业版首页</a>';
+  html+='</div>';
+  return html;
+}
+function veriBox(desc,kws,hit){
+  return '<div class="veri-box"><h3>用默沙东诊疗手册核对（验证锚点）</h3><p>'+(desc||"以下关键词可在《默沙东诊疗手册》中检索到权威条目，供你与就诊时对照；手册内容免费、面向大众开放。")+'</p>'+msdLinks(kws,hit)+'</div>';
+}
+
+/* ---------- 通用红旗信号（急诊警示，医学安全常识） ---------- */
+var REDFLAGS=[
+  "呼吸困难或气促","意识改变、昏厥或极度嗜睡","剧烈胸痛（尤其伴冷汗、向左肩/背放射）","大出血或止血不止",
+  "持续高热不退","“一生中最剧烈的头痛”","面部或肢体突然麻木无力、言语含糊（卒中征象）","抽搐发作",
+  "严重腹痛且拒按","皮肤出现无法消退的瘀斑或紫癜"
+];
+
+/* ---------- 症状知识库（模板A） ---------- */
+var SYMPTOMS=[
+  {key:["头痛","头疼"],name:"头痛",msd:"https://www.msdmanuals.cn/home/quick-facts-brain-spinal-cord-and-nerve-disorders/headaches/overview-of-headaches",mech:"头痛是最常见的就医原因之一，多数并不危险。肌肉紧张、睡眠不足、视疲劳、压力、感冒发热都可通过神经与血管机制引起头痛；偏头痛则有典型的单侧搏动性特点。",
+   diffs:["紧张性头痛（最常见，双侧紧箍感）","偏头痛（单侧搏动，伴恶心/畏光，可有先兆）","鼻窦炎相关头痛（前额/面颊压痛）","血压明显升高或颈部问题相关头痛","需排查：突然剧烈头痛、伴神经症状的头痛"],
+   flags:["突然出现的极剧烈头痛（“一生中最痛”）","头痛伴意识改变、抽搐或肢体无力","头痛伴发热和颈项强直","头部外伤后头痛加重"],
+   dept:"神经内科（首选）；伴发热/颈强直可先急诊；伴鼻部症状可先耳鼻喉科",
+   tests:"基础检查：血压测量、神经系统查体；必要时头颅 CT/MRI（由医生判断）"},
+  {key:["牙痛","牙疼","牙齿痛","牙齿疼","牙齿疼痛","下颌痛","牙床"],name:"牙痛",msd:"https://www.msdmanuals.cn/home/multimedia/table/some-causes-and-features-of-toothache",mech:"牙痛最常见来自牙齿本身：龋齿深及牙髓（夜间加重）、牙周炎、牙隐裂（冷热/咬合时痛）、智齿冠周炎等；运动时冷空气刺激或咀嚼肌紧张也可引起一过性牙痛。但运动（尤其跑步、爬楼）时出现的牙痛或下颌痛，需要特别留意一种少见而重要的可能：心肌缺血（心绞痛）可表现为下颌、牙齿区域的放射痛，典型特点是运动诱发、休息后缓解。",
+   diffs:["牙源性（最常见）：深龋/牙髓炎（夜间痛）、牙周炎、牙隐裂","牙齿敏感：冷空气、运动中吸入冷风引起一过性酸痛","咀嚼肌/颞下颌关节紧张（运动时咬牙、压力大）","智齿冠周炎（后牙区肿痛，张口受限）","需排查：劳力性心绞痛放射至下颌/牙齿（运动诱发、休息缓解，可伴胸闷或冷汗）"],
+   flags:["运动时牙痛/下颌痛，伴胸痛、冷汗、恶心，或放射至左肩背（立即急诊，警惕心肌缺血）","牙痛伴面部明显肿胀、发热（颌面部感染）","牙痛剧烈且夜间加重、常规止痛无效"],
+   dept:"口腔科（牙源性为主）；若牙痛与运动/劳力明显相关、伴胸闷冷汗，先心内科或急诊",
+   tests:"口腔检查、牙片；运动相关且可疑心源时，心电图、心肌酶等由医生判断"},
+  {key:["胸痛","胸口痛","胸闷"],name:"胸痛/胸闷",msd:"https://www.msdmanuals.cn/home/heart-and-blood-vessel-disorders/symptoms-of-heart-and-blood-vessel-disorders/chest-pain",mech:"胸痛的原因很多：最常见的是肌肉骨骼劳损、肋间神经痛、胃食管反流；也可能与心脏、肺部有关。性质、诱因和伴随症状是判断方向的关键。",
+   diffs:["胸壁肌肉/肋骨问题（按压痛点明确，活动加重）","胃食管反流（烧心感、与进食有关）","焦虑相关（心慌、气短、紧张时出现）","肺部问题（伴咳嗽、发热）","需排查：心脏相关问题（劳力诱发、休息缓解、伴冷汗）"],
+   flags:["胸痛持续不缓解，伴冷汗、恶心、放射至左肩背或下颌","胸痛伴呼吸困难、晕厥","胸痛伴咯血或下肢肿痛"],
+   dept:"心血管内科或急诊；与活动无关的局部疼痛可先看胸外科/骨科",
+   tests:"心电图、血压心率测量、必要时心肌酶、胸片/CT、运动试验（由医生判断）"},
+  {key:["腹痛","肚子痛","胃痛"],name:"腹痛",mech:"腹痛的机制多样：饮食不当、胃肠痉挛、胃炎/溃疡、肠易激都常见；女性还需考虑妇科问题。部位（上腹/下腹/脐周）和与进食排便的关系最重要。",
+   diffs:["功能性胃肠不适/肠易激（与压力、饮食相关）","急性胃肠炎（伴腹泻呕吐）","胃炎、胃溃疡（上腹痛，与进食相关）","女性：痛经/盆腔问题","需排查：急腹症（阑尾炎、胆囊炎、胰腺炎等）"],
+   flags:["剧烈持续腹痛且按压加重（板状腹）","腹痛伴发热、呕吐或血便","腹痛伴晕厥、苍白（警惕内出血）"],
+   dept:"消化内科（慢性）；急性剧烈疼痛直接急诊外科",
+   tests:"腹部查体、血常规、腹部超声/CT；女性可加妇科超声"},
+  {key:["头晕","眩晕","头昏"],name:"头晕/眩晕",msd:"https://www.msdmanuals.cn/home/multimedia/table/some-causes-and-features-of-dizziness",mech:"头晕常分两类：头重脚轻（多为疲劳、低血压、贫血、情绪）、天旋地转（多与内耳前庭或颈椎有关）。多数良性，但需排查心脑血管原因。",
+   diffs:["体位性低血压（起身时眼前发黑）","内耳前庭问题（眩晕，伴恶心）","贫血或睡眠不足","焦虑与过度呼吸（伴心慌手麻）","需排查：心律失常、脑血管问题（伴肢体无力、言语障碍）"],
+   flags:["头晕伴言语含糊、肢体无力或视物双影","头晕伴胸痛、心悸晕厥","外伤后头晕"],
+   dept:"神经内科；伴耳部症状可先耳鼻喉科；伴心悸先心内科",
+   tests:"血压（立卧位）、血常规、心电图；必要时前庭功能或头颅影像"},
+  {key:["心悸","心慌","心跳"],name:"心悸/心慌",msd:"https://www.msdmanuals.cn/home/heart-and-blood-vessel-disorders/symptoms-of-heart-and-blood-vessel-disorders/palpitations",mech:"心悸多为良性：咖啡因、熬夜、紧张焦虑、运动后都常见；也可能是心律失常或甲状腺功能亢进的表现。持续时间与诱因是重点。",
+   diffs:["情绪/咖啡因/睡眠因素（可复现诱因）","早搏等良性心律不齐（偶发）","甲状腺功能亢进（伴手抖、怕热、消瘦）","贫血或低血糖","需排查：持续性快速心律失常（伴晕厥前兆）"],
+   flags:["心悸伴晕厥或濒死感","静息心率持续显著异常","心悸伴胸痛、呼吸困难"],
+   dept:"心内科；查心电图（必要时 24 小时动态心电图）、甲状腺功能、血常规",
+   tests:"心电图、动态心电图、甲状腺功能、电解质"},
+  {key:["乏力","疲劳","累"],name:"乏力/疲劳",mech:"乏力是最无特异性的主诉之一：睡眠不足、压力、营养、久坐是常见原因；持续乏力才需要排查贫血、甲状腺、血糖等问题。",
+   diffs:["睡眠与压力因素（最常见）","缺铁性贫血","甲状腺功能减退（伴怕冷、便秘、浮肿）","血糖异常（伴多饮多尿）","需排查：长期不明原因疲劳（少见原因需系统检查）"],
+   flags:["乏力伴明显消瘦、发热或夜间盗汗","乏力伴活动后明显气促"],
+   dept:"全科/内科；女性可先查血常规+甲功",
+   tests:"血常规、甲状腺功能、空腹血糖"},
+  {key:["咳嗽","咳"],name:"咳嗽",msd:"https://www.msdmanuals.cn/home/multimedia/table/some-causes-and-features-of-cough-in-adults",mech:"咳嗽是气道保护反射。普通感冒、过敏、咽炎最常见；超过 3 周的慢性咳嗽需考虑哮喘、反流、鼻后滴漏等。",
+   diffs:["上呼吸道感染（伴鼻塞咽痛，多 1~2 周）","过敏或鼻后滴漏（晨起/夜间明显）","胃食管反流（平卧加重）","气道敏感/咳嗽变异性哮喘","需排查：伴发热、黄脓痰、咯血的肺部感染"],
+   flags:["咯血","呼吸困难、口唇发紫","咳嗽伴胸痛、高热"],
+   dept:"呼吸内科；儿童可看儿科/儿呼吸",
+   tests:"胸片、血常规；慢性咳嗽可查肺功能"},
+  {key:["发热","发烧","体温"],name:"发热",msd:"https://www.msdmanuals.cn/home/quick-facts-infections/biology-of-infectious-disease/fever-in-adults",mech:"发热是身体对抗感染的重要防御反应，多数由病毒性上呼吸道感染引起，2~3 天可自行下降。持续高热或反复发热才需要进一步排查。",
+   diffs:["病毒性上呼吸道感染（最常见）","急性胃肠炎（伴腹泻）","尿路感染（伴尿频尿痛）","流感（高热伴全身酸痛）","需排查：持续 3 天以上、或伴危险信号的发热"],
+   flags:["发热伴意识改变或抽搐","发热伴颈项强直、剧烈头痛","体温极高且退热药无效，伴呼吸急促"],
+   dept:"发热门诊/内科；婴幼儿、老人需更积极就医",
+   tests:"血常规、CRP；必要时尿常规、胸片"},
+  {key:["腹泻","拉肚子"],name:"腹泻",msd:"https://www.msdmanuals.cn/home/multimedia/table/some-causes-and-features-of-diarrhea",mech:"急性腹泻多为感染或不洁饮食引起，多数 3~5 天自愈；关键是补水防脱水。慢性腹泻才需排查肠易激、乳糖不耐等。",
+   diffs:["急性胃肠炎（与饮食相关，伴恶心）","肠易激综合征（与压力、饮食模式相关）","食物不耐受/乳糖不耐","抗生素相关腹泻","需排查：血便、高热、脱水明显的感染性腹泻"],
+   flags:["血便或黑便","腹泻伴严重脱水（口干、尿少、乏力）","持续高热伴腹泻"],
+   dept:"消化内科；急性伴脱水可先急诊",
+   tests:"粪常规、血常规、电解质"},
+  {key:["皮疹","起疹","红疹"],name:"皮疹",mech:"皮疹病因繁杂：接触过敏、湿疹、荨麻疹、感染（病毒疹/真菌）都常见。伴随症状（是否瘙痒、发热）是关键线索。",
+   diffs:["荨麻疹/过敏（风团样，瘙痒，来得快去得快）","湿疹（慢性、干燥、特定部位）","接触性皮炎（接触史明确）","病毒疹或药物疹（伴发热或近期用药）","需排查：皮疹伴全身症状、口唇肿胀"],
+   flags:["皮疹伴呼吸困难、口唇/眼睑肿胀（过敏急症）","皮疹伴高热、精神差","皮疹迅速蔓延伴紫癜样出血点"],
+   dept:"皮肤科；急性过敏反应直接急诊",
+   tests:"皮肤查体为主；必要时过敏原检测、血常规"}
+];
+var GENERIC_MECH="单凭文字描述无法确定具体机制。多数常见不适（短暂、可缓解、不伴危险信号）可由疲劳、压力、睡眠、饮食等日常因素解释；持续存在或加重的情况需要由医生通过问诊与查体判断。";
+var GENERIC_DIFFS=["常见的功能性与生活方式相关原因（疲劳、压力、睡眠、饮食）","轻度感染或局部问题","需要持续观察的变化（症状是否加重、频率是否增加）","需排查：持续存在、逐渐加重或伴全身症状的情况"];
+var GENERIC_FLAGS=REDFLAGS.slice(0,6);
+
+/* ---------- 体检指标知识库（模板B） ---------- */
+var INDICATORS=[
+  {key:["血压","收缩压","舒张压"],name:"血压",plain:"血压是血液对血管壁的压力，受情绪、运动、饮食、睡眠影响很大，单次升高不等于高血压。",
+   combos:"血压高 + 血脂异常 + 血糖高常同时出现（代谢综合征），提示需要综合评估心血管风险。",
+   review:"家庭多次不同日测量仍持续偏高（≥140/90 mmHg 量级）建议心血管内科评估；偶发升高可复查并改善生活方式。",
+   calm:"单次测量升高（如紧张、运动后）很常见，不必焦虑；按医生建议复测即可。"},
+  {key:["空腹血糖","血糖"],name:"空腹血糖",plain:"空腹血糖反映 8 小时以上未进食后的血糖水平，是筛查糖尿病的常用指标。",
+   combos:"空腹血糖偏高 + 甘油三酯高 + 腹型肥胖，提示胰岛素抵抗风险，建议进一步查糖化血红蛋白与餐后血糖。",
+   review:"轻度偏高建议复查并做糖化血红蛋白；明显升高需内分泌科就诊。",
+   calm:"一次偏高可能与前一晚饮食、睡眠、应激有关，先复测。"},
+  {key:["糖化血红蛋白","糖化"],name:"糖化血红蛋白",plain:"反映近 2~3 个月的平均血糖水平，受单次饮食影响小，是评估血糖控制的核心指标。",
+   combos:"与空腹血糖一起看：糖化正常但空腹偏高，或反之，都提示需要规范复查。",
+   review:"超出参考范围建议内分泌科进一步评估。",
+   calm:"它在正常范围上缘波动，配合生活方式调整即可，不必恐慌。"},
+  {key:["总胆固醇","胆固醇"],name:"总胆固醇",plain:"血脂中的一项，反映血液中胆固醇总量，受饮食、遗传、代谢共同影响。",
+   combos:"总胆固醇与 LDL（“坏胆固醇”）、甘油三酯同高时，心血管风险才需综合评估。",
+   review:"持续偏高建议复查并评估整体血脂谱与心血管风险。",
+   calm:"单次轻度升高很常见，饮食油腻、体检前未空腹都会影响。"},
+  {key:["低密度脂蛋白","低密度","LDL"],name:"低密度脂蛋白（LDL）",plain:"俗称“坏胆固醇”，是动脉粥样硬化评估中最重要的血脂指标之一。",
+   combos:"LDL 偏高 + 高血压/吸烟/糖尿病，心血管风险叠加，需医生综合计算风险等级。",
+   review:"偏高建议心血管内科/内分泌科评估，是否需要用药由医生根据整体风险决定。",
+   calm:"轻度升高不必立即焦虑，医生会结合年龄与其他风险因素判断。"},
+  {key:["高密度脂蛋白","高密度","HDL"],name:"高密度脂蛋白（HDL）",plain:"俗称“好胆固醇”，偏低与心血管风险升高相关；运动可提升。",
+   combos:"HDL 偏低 + LDL 偏高是常见的“坏组合”，提示需要加强运动与饮食管理。",
+   review:"持续偏低建议结合整体血脂谱评估。",
+   calm:"单次偏低通过规律运动多可改善。"},
+  {key:["甘油三酯","甘油"],name:"甘油三酯",plain:"血脂中受饮食影响最大的成分，暴饮暴食、饮酒后常明显升高。",
+   combos:"甘油三酯很高（通常指显著超参考上限）时，与急性胰腺炎风险相关，需要就医；轻度偏高主要与饮食运动相关。",
+   review:"明显升高建议复查并控制饮食、限酒、减重。",
+   calm:"轻度升高几乎都与近期饮食有关，调整后常可恢复。"},
+  {key:["谷丙转氨酶","ALT","丙氨酸"],name:"谷丙转氨酶（ALT）",plain:"主要存在于肝细胞，升高提示肝细胞可能受损，但轻度升高极为常见（劳累、饮酒、脂肪肝、药物）。",
+   combos:"ALT 与 AST 同高 + 脂肪肝（B 超），多为代谢相关脂肪性肝病；与胆红素同高需进一步评估。",
+   review:"轻度升高建议 1~3 个月复查；持续升高查肝炎标志物与腹部超声。",
+   calm:"轻中度升高常与熬夜、饮酒、脂肪肝相关，不一定是“肝炎”。"},
+  {key:["谷草转氨酶","AST","天冬氨酸"],name:"谷草转氨酶（AST）",plain:"存在于肝细胞、心肌与肌肉等，升高也可见于肌肉劳损、剧烈运动后，特异性不如 ALT。",
+   combos:"AST/ALT 比值异常时医生会结合病史判断方向。",
+   review:"与 ALT 一起复查，必要时查肌酸激酶区分来源。",
+   calm:"体检前剧烈运动也可能让它升高，先复查再说。"},
+  {key:["肌酐","CREA","Cr"],name:"肌酐（血）",plain:"反映肾功能的重要指标，与肌肉量有关，个体间有差异，单次轻度波动常见。",
+   combos:"肌酐升高 + 尿素氮同高 + 尿蛋白，提示肾功能需系统评估。",
+   review:"明显升高或持续升高建议肾内科就诊。",
+   calm:"脱水、剧烈运动、高蛋白饮食都可能造成一过性升高，先复测。"},
+  {key:["尿素氮","尿素","BUN"],name:"尿素氮",plain:"蛋白质代谢产物，经肾排出，受饮食、脱水影响大。",
+   combos:"与肌酐同时看：单纯尿素氮升高而肌酐正常，多与饮食、脱水有关。",
+   review:"与肌酐共同评估；持续异常查肾功能全套。",
+   calm:"体检前高蛋白饮食或饮水不足常见一过性升高。"},
+  {key:["白细胞","WBC"],name:"白细胞计数",plain:"免疫细胞，升高多提示感染/炎症，降低可见于病毒感染后或药物影响。",
+   combos:"白细胞升高 + 中性粒细胞高 + CRP 高，提示细菌感染方向。",
+   review:"明显异常建议复查血常规，必要时查 CRP。",
+   calm:"轻微偏离参考范围（尤其感冒后）很常见，动态观察即可。"},
+  {key:["血红蛋白","Hb","贫血"],name:"血红蛋白",plain:"血液中负责携氧的成分，偏低提示贫血（可能缺铁、营养、慢性失血等）。",
+   combos:"血红蛋白低 + 平均红细胞体积小，多为缺铁性贫血方向，查铁蛋白确认。",
+   review:"明显偏低建议血液科/内科评估；女性与月经量有关。",
+   calm:"轻度偏低先复查并注意饮食（红肉、动物肝脏、铁强化食物）。"},
+  {key:["血小板","PLT"],name:"血小板计数",plain:"参与止血的细胞，轻度波动多无临床意义。",
+   combos:"显著降低 + 皮肤瘀斑/牙龈出血，需血液科就诊。",
+   review:"持续明显异常建议复查并血液科评估。",
+   calm:"轻微波动很常见，复查即可。"},
+  {key:["尿酸","UA"],name:"尿酸",plain:"嘌呤代谢产物，升高与饮食（海鲜、啤酒、内脏）、遗传、肾功能有关。",
+   combos:"尿酸高 + 关节红肿热痛，提示痛风发作方向；与血糖血脂异常常并存。",
+   review:"持续偏高且有关节症状，建议风湿免疫科/内分泌科评估。",
+   calm:"轻度升高无关节症状时，先调整饮食、多饮水，多可改善。"},
+  {key:["促甲状腺激素","TSH"],name:"促甲状腺激素（TSH）",plain:"调节甲状腺功能的“总开关”，是筛查甲状腺问题的首选指标。",
+   combos:"TSH 高 + T4 低提示甲减方向；TSH 低 + T4 高提示甲亢方向；需结合甲状腺素（FT3/FT4）一起看。",
+   review:"明显异常建议内分泌科进一步查甲功全套。",
+   calm:"TSH 轻度偏离参考范围（亚临床状态）很常见，医生会根据数值与症状决定随访还是干预。"},
+  {key:["癌胚抗原","CEA"],name:"癌胚抗原（CEA）",plain:"一种肿瘤标志物，但它并不特异：吸烟、炎症、胃肠道良性疾病都可能轻度升高。",
+   combos:"单一 CEA 轻度升高不等于患癌；明显持续升高需结合影像与胃肠镜检查。",
+   review:"持续升高建议消化内科/肿瘤科进一步评估。",
+   calm:"轻度升高大部分是良性的；肿瘤标志物从不单独用于确诊，请勿自行对照网络解读。"},
+  {key:["甲胎蛋白","AFP"],name:"甲胎蛋白（AFP）",plain:"一种肿瘤标志物，异常升高需重视，但也可见于肝炎活动期与妊娠。",
+   combos:"AFP 升高 + 乙肝病史，需结合肝脏超声评估。",
+   review:"明显升高建议肝病科/消化科进一步检查。",
+   calm:"轻度升高先复查，结合影像判断，不要自行下结论。"},
+  {key:["尿蛋白","尿蛋白"],name:"尿蛋白",plain:"尿中出现蛋白提示肾脏滤过可能有问题，但也可见于发热、剧烈运动、紧张后的一过性情况。",
+   combos:"持续尿蛋白 + 血压高 + 肌酐高，提示肾脏需系统评估。",
+   review:"复查尿常规；持续阳性建议肾内科。",
+   calm:"单次阳性（尤其运动后、清晨）常见，复查尿微量白蛋白即可。"}
+];
+
+/* ---------- 用药/保健品知识库（模板D） ---------- */
+var DRUG_ALIASES=[
+  {drug:"对乙酰氨基酚",aliases:["对乙酰氨基酚","扑热息痛","泰诺","必理通","醋氨酚","tylenol"]},
+  {drug:"布洛芬",aliases:["布洛芬","芬必得","美林","advil","motrin","酮洛芬","萘普生"]},
+  {drug:"阿司匹林",aliases:["阿司匹林","拜阿司匹灵","乙酰水杨酸"]},
+  {drug:"氯雷他定",aliases:["氯雷他定","开瑞坦"]},
+  {drug:"西替利嗪",aliases:["西替利嗪","仙特明"]},
+  {drug:"奥美拉唑",aliases:["奥美拉唑","洛赛克"]},
+  {drug:"二甲双胍",aliases:["二甲双胍","格华止"]},
+  {drug:"阿托伐他汀",aliases:["阿托伐他汀","立普妥"]},
+  {drug:"辛伐他汀",aliases:["辛伐他汀","舒降之"]},
+  {drug:"硝苯地平",aliases:["硝苯地平","拜新同"]},
+  {drug:"氨氯地平",aliases:["氨氯地平","络活喜"]},
+  {drug:"华法林",aliases:["华法林","华法令"]},
+  {drug:"阿莫西林",aliases:["阿莫西林"]},
+  {drug:"头孢菌素",aliases:["头孢","cephalosporin"]},
+  {drug:"左氧氟沙星",aliases:["左氧氟沙星","可乐必妥"]},
+  {drug:"铁剂",aliases:["硫酸亚铁","富马酸亚铁","铁剂","琥珀酸亚铁"]},
+  {drug:"钙剂",aliases:["钙片","碳酸钙","柠檬酸钙","钙剂"]},
+  {drug:"维生素D",aliases:["维生素d","维d","骨化三醇"]},
+  {drug:"鱼油",aliases:["鱼油","omega-3","epa","dha"]},
+  {drug:"褪黑素",aliases:["褪黑素","melatonin"]}
+];
+var DRUG_INTERACTIONS=[
+  {pair:["对乙酰氨基酚","酒精"],tip:"对乙酰氨基酚与含酒精饮品同用可能增加肝脏损伤风险，尤其长期或大剂量使用时，应主动告知医生饮酒习惯。"},
+  {pair:["布洛芬","华法林"],tip:"布洛芬/阿司匹林等非甾体抗炎药与华法林等抗凝药同用，出血风险明显增加，必须由医生评估后才能同用。"},
+  {pair:["布洛芬","降压药"],tip:"布洛芬可能削弱部分降压药效果并影响肾功能，长期联用需医生评估。"},
+  {pair:["阿司匹林","布洛芬"],tip:"布洛芬可能干扰低剂量阿司匹林的心血管保护作用，需咨询医生后再决定如何服用。"},
+  {pair:["他汀","抗生素"],tip:"他汀类药物（阿托伐他汀/辛伐他汀）与大环内酯类抗生素（克拉霉素、红霉素等）同用可能增加肌肉损伤风险，需医生调整。"},
+  {pair:["铁剂","钙剂"],tip:"铁剂与钙剂、茶、咖啡同服会降低铁的吸收，建议间隔 2 小时以上。"},
+  {pair:["左氧氟沙星","抗酸剂"],tip:"左氧氟沙星与含铝/镁的抗酸剂、铁剂同用会降低吸收，需间隔 2~4 小时或遵医嘱。"},
+  {pair:["华法林","维生素K"],tip:"华法林与富含维生素 K 的食物（大量绿叶蔬菜）相互作用，食量突然大幅变化会影响抗凝效果。"},
+  {pair:["他汀","西柚"],tip:"西柚（葡萄柚）汁可能使他汀等药物血药浓度升高，服药期间应避免大量饮用。"},
+  {pair:["二甲双胍","造影剂"],tip:"二甲双胍与碘造影剂联用需评估肾功能，是否暂停用药由医生决定，不要自行停用。"}
+];
+
+/* ---------- 模板定义 ---------- */
+var TEMPLATES=[
+  {key:"A",tag:"模板 A",tagCls:"tag-a",title:"症状自查",scene:"低危场景 · 不适想先理清楚",desc:"你是一个谨慎的医学信息整理助手，不是医生。填完 8 个字段，得到机制解释、鉴别方向、红旗信号、就诊科室与 3 个提问。",
+   fields:[
+     {n:"gender",label:"性别",type:"chips",opts:["男","女"],req:true},
+     {n:"age",label:"年龄（岁）",type:"number",ph:"如 24"},
+     {n:"symptom",label:"主要症状 *",type:"text",ph:"如：右侧太阳穴胀痛",req:true},
+     {n:"time",label:"持续时间",type:"text",ph:"如：3 天 / 2 周 / 1 小时"},
+     {n:"nature",label:"部位与性质",type:"text",ph:"如：单侧、搏动样、按压可缓解"},
+     {n:"companion",label:"伴随症状",type:"text",ph:"如：恶心、怕光"},
+     {n:"history",label:"病史 / 用药",type:"text",ph:"如：高血压，正在吃氨氯地平"},
+     {n:"checks",label:"已做检查（可贴数值）",type:"textarea",ph:"如：血压 128/82 mmHg；血常规大致正常"}
+   ]},
+  {key:"B",tag:"模板 B",tagCls:"tag-b",title:"体检报告解读",scene:"拿到报告，看不懂异常项",desc:"只做解释、组合提示、复查建议与提问清单。禁止直接诊断，禁止推荐具体处方药。",
+   fields:[
+     {n:"items",label:"异常项（建议一行一项，可贴数值与参考范围）*",type:"textarea",ph:"例：\nALT 62 U/L（参考 <40）\n甘油三酯 2.3 mmol/L（参考 <1.7）\n尿酸 480 μmol/L（参考 <420）",req:true},
+     {n:"context",label:"背景（可选）",type:"text",ph:"如：体检前熬夜、近期饮酒较多"}
+   ]},
+  {key:"C",tag:"模板 C",tagCls:"tag-c",title:"防谄媚 / 防焦虑螺旋",scene:"有点健康焦虑，怕把问题想严重",desc:"做“反向校准”：先讲常见与低危，再讲真正该警惕的，直接指出错误前提，只给分层风险。",
+   fields:[
+     {n:"worry",label:"我现在最担心的是 *",type:"textarea",ph:"如：最近脖子有点酸，我担心是不是颈椎病甚至更严重",req:true},
+     {n:"symptom",label:"让我担心的具体身体感受",type:"text",ph:"如：颈部酸痛、偶发手指发麻"},
+     {n:"freq",label:"我每天搜索健康信息的频率",type:"select",opts:["基本不搜","0~1 次","2~5 次","5 次以上"]},
+     {n:"feel",label:"搜索后我的感觉",type:"chips",opts:["更焦虑了","有时安心有时更怕","没明显变化"]}
+   ]},
+  {key:"D",tag:"模板 D",tagCls:"tag-d",title:"用药 / 保健品冲突",scene:"正在用 X，想加 Y，先核对",desc:"先看是否同一成分、再看相互作用与肝肾功能注意点，最后列必须让医生/药师确认的清单。",
+   fields:[
+     {n:"using",label:"我正在用（多种用顿号/逗号分隔）*",type:"text",ph:"如：阿司匹林、氨氯地平",req:true},
+     {n:"adding",label:"想加（药品或保健品）*",type:"text",ph:"如：鱼油、钙片",req:true},
+     {n:"duration",label:"用药时长",type:"text",ph:"如：阿司匹林 1 年"},
+     {n:"renal",label:"肝肾功能情况（可选）",type:"text",ph:"如：体检说肌酐偏高；或：不清楚"}
+   ]}
+];
+
+/* ---------- 低危/绝对化词（模板C） ---------- */
+var LOWRISK_COMMON="多数偶发、短暂、可自行缓解的不适（如偶发心悸、肌肉跳动、颈部酸痛、疲劳感），在作息紊乱、压力大、久坐之后出现，最常见的原因其实是功能性与生活方式相关，而不是严重疾病。";
+var ABSOLUTE_WORDS=[["一定是","绝对化表述：把“可能”说成“一定”，是焦虑放大症状的典型认知陷阱。"],["肯定","绝对化表述：网络信息无法给出“肯定”结论，感到“肯定”往往来自情绪而非证据。"],["没救了","灾难化表述：把普通不适直接等同于最坏结局。"],["晚期","灾难化表述：在没有任何检查依据时预判分期，属于想象性结论。"],["绝症","灾难化表述：请先回到“症状 + 检查”的事实层面。"],["确诊","注意：未经医生与检查，“确诊”一词不成立，网络信息不能确诊任何疾病。"]];
+
+/* ---------- 路由 ---------- */
+function go(v){
+  var views=document.querySelectorAll(".view");
+  views.forEach(function(el){el.classList.toggle("active",el.dataset.view===v);});
+  document.querySelectorAll(".nav-links a").forEach(function(a){
+    a.classList.toggle("active",a.dataset.route===v);
+  });
+  window.scrollTo({top:0,behavior:"auto"});
+}
+window.go=go;
+document.querySelectorAll("[data-route]").forEach(function(el){
+  if(el.tagName==="A"){
+    el.addEventListener("click",function(e){e.preventDefault();go(el.dataset.route);});
+  }
+});
+
+/* ---------- 模板选择 ---------- */
+var tplGrid=document.getElementById("tplGrid");
+tplGrid.innerHTML=TEMPLATES.map(function(t,i){
+  return '<button class="tpl" onclick="pickTpl('+i+')">'+
+    '<span class="tpl-tag '+t.tagCls+'">'+t.tag+'</span>'+
+    '<h3>'+t.title+'</h3>'+
+    '<p>'+t.scene+'</p>'+
+    '<p style="font-size:12.5px;color:var(--ink-3);margin-top:6px">'+t.desc+'</p>'+
+    '<span class="tpl-go">选择此模板 →</span></button>';
+}).join("");
+
+/* ---------- 表单渲染 ---------- */
+function chipHTML(f){
+  return '<div class="chip-row">'+f.opts.map(function(o){
+    return '<label class="f-chip"><input type="radio" name="f-'+f.n+'" value="'+esc(o)+'">'+esc(o)+'</label>';
+  }).join("")+'</div>';
+}
+function fieldHTML(f){
+  var req=f.req?' <span style="color:var(--coral)">*</span>':'';
+  var html='<div class="f-group"><label>'+f.label+req+(f.opt?' <span class="opt">（'+f.opt+'）</span>':'')+'</label>';
+  if(f.type==="chips"){html+=chipHTML(f);}
+  else if(f.type==="select"){
+    html+='<select name="f-'+f.n+'"><option value="">请选择</option>'+f.opts.map(function(o){return '<option>'+esc(o)+'</option>';}).join("")+'</select>';
+  }else if(f.type==="textarea"){
+    html+='<textarea name="f-'+f.n+'" placeholder="'+esc(f.ph||"")+'" '+(f.req?'required':'')+'></textarea>';
+  }else{
+    html+='<input type="'+f.type+'" name="f-'+f.n+'" placeholder="'+esc(f.ph||"")+'" '+(f.req?'required':'')+' min="1" max="120">';
+  }
+  return html+'</div>';
+}
+function pickTpl(i){
+  var t=TEMPLATES[i];
+  var form=document.getElementById("step-form");
+  var rows=[];
+  for(var j=0;j<t.fields.length;j+=2){
+    var pair='<div class="f-row">'+fieldHTML(t.fields[j])+(t.fields[j+1]?fieldHTML(t.fields[j+1]):'')+'</div>';
+    rows.push(pair);
+  }
+  form.innerHTML='<div class="form-card">'+
+    '<span class="tag '+t.tagCls+'" style="margin-bottom:10px;display:inline-block">'+t.tag+' · '+t.scene+'</span>'+
+    '<h2>'+t.title+'</h2>'+
+    '<p class="f-sub">'+t.desc+'</p>'+
+    rows.join("")+
+    '<button class="btn btn-pine form-submit" onclick="submitForm('+i+')">生成整理稿</button>'+
+    '</div>';
+  form.style.display="block";
+  document.getElementById("step-tpl").style.display="none";
+  document.getElementById("step-report").style.display="none";
+  form.scrollIntoView({behavior:"smooth"});
+}
+window.pickTpl=pickTpl;
+
+function collectForm(t){
+  var data={};
+  t.fields.forEach(function(f){
+    var el=document.querySelector('[name="f-'+f.n+'"]');
+    if(!el)return;
+    if(el.type==="radio"){
+      var ck=document.querySelector('[name="f-'+f.n+'"]:checked');
+      data[f.n]=ck?ck.value:"";
+    }else{data[f.n]=el.value.trim();}
+  });
+  return data;
+}
+
+/* ---------- 报告渲染 ---------- */
+var currentTpl=null,currentData=null;
+function submitForm(i){
+  var t=TEMPLATES[i];
+  var data=collectForm(t);
+  for(var j=0;j<t.fields.length;j++){
+    if(t.fields[j].req&&!data[t.fields[j].n]){alert("请填写必填项："+t.fields[j].label.replace(" *",""));return;}
+  }
+  currentTpl=t;currentData=data;
+  var rep=document.getElementById("step-report");
+  rep.innerHTML=renderReport(t,data);
+  rep.style.display="block";
+  document.getElementById("step-form").style.display="none";
+  rep.scrollIntoView({behavior:"smooth"});
+}
+window.submitForm=submitForm;
+
+function secHTML(n,title,inner,cls){
+  return '<div class="report-sec '+(cls||"")+'"><h3><span class="rn">'+n+'</span>'+title+'</h3>'+inner+'</div>';
+}
+function ulHTML(items,cls){
+  return '<ul'+(cls?' class="'+cls+'"':'')+'>'+items.map(function(x){return "<li>"+x+"</li>";}).join("")+"</ul>";
+}
+
+/* 模板A：症状自查 */
+function reportA(d){
+  var txt=(d.symptom+" "+(d.nature||"")+" "+(d.companion||"")).toLowerCase();
+  var hit=null;
+  for(var i=0;i<SYMPTOMS.length;i++){
+    var s=SYMPTOMS[i];
+    for(var k=0;k<s.key.length;k++){
+      if(txt.indexOf(s.key[k].toLowerCase())>-1){hit=s;break;}
+    }
+    if(hit)break;
+  }
+  var mech=hit?hit.mech:GENERIC_MECH;
+  var diffs=hit?hit.diffs:GENERIC_DIFFS;
+  var flags=hit?hit.flags:GENERIC_FLAGS;
+  var dept=hit?hit.dept:"全科 / 内科（先由医生判断方向）";
+  var tests=hit?hit.tests:"基础检查：血常规、相应部位查体；由医生决定是否需要影像或化验";
+  var name=hit?hit.name:(d.symptom||"该不适");
+  var kw=[d.symptom||name];
+  if(d.companion)kw.push(d.companion);
+  var summary='<div class="user-summary"><b>你的情况：</b>'+
+    (d.gender||"—")+(d.age?"，"+esc(d.age)+" 岁；":"；")+
+    " 症状："+esc(d.symptom)+(d.time?"；持续 "+esc(d.time):"")+
+    (d.nature?"；"+esc(d.nature):"")+
+    (d.companion?"；伴随："+esc(d.companion):"")+
+    (d.history?"；病史/用药："+esc(d.history):"")+
+    (d.checks?"；已做检查："+esc(d.checks):"")+"</div>";
+  var h="";
+  h+=summary;
+  h+=secHTML(1,"用大白话解释可能机制","<p>"+esc(mech)+"</p>");
+  h+=secHTML(2,"鉴别方向（从常见到需排查）",ulHTML(diffs.map(function(x){return esc(x);})));
+  h+=secHTML(3,"红旗信号：出现这些要急诊","<div class='redline'>"+ulHTML(flags.map(function(x){return esc(x);}),"flag-list")+"</div>");
+  h+=secHTML(4,"下一步：挂什么科、做哪些基础检查","<p><b>建议科室：</b>"+esc(dept)+"</p><p style='margin-top:6px'><b>基础检查：</b>"+esc(tests)+"</p>");
+  h+=secHTML(5,"明天就诊时问医生的 3 个问题",ulHTML([
+    "这个症状在门诊里常见吗？最常见的原因大概是哪些？",
+    "按我的情况，需要做哪些检查来排除/确认方向？",
+    "在就诊前，我有没有需要立即注意或避免的事情（如停药、剧烈活动）？"
+  ]));
+  h+=veriBox("以下关键词可在默沙东诊疗手册中检索权威条目，供你核对上述方向；请以手册与医生意见为准。",kw,hit);
+  return h;
+}
+
+/* 模板B：体检报告解读 */
+function reportB(d){
+  var lines=(d.items||"").split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
+  var matched=[],unmatched=[];
+  lines.forEach(function(ln){
+    var hit=null;
+    for(var i=0;i<INDICATORS.length;i++){
+      var it=INDICATORS[i];
+      for(var k=0;k<it.key.length;k++){
+        if(ln.indexOf(it.key[k])>-1){hit=it;break;}
+      }
+      if(hit)break;
+    }
+    if(hit){matched.push({item:hit,line:ln});}else{unmatched.push(ln);}
+  });
+  var h="";
+  h+='<div class="user-summary"><b>你提交的异常项：</b>'+esc(lines.join(" ｜ "))+(d.context?"<br><b>背景：</b>"+esc(d.context):"")+"</div>";
+  var inner="";
+  if(matched.length===0){inner="<p>未能从描述中匹配到常见指标，请在就诊时携带完整报告让医生解读；以下为通用提醒。</p>";}
+  matched.forEach(function(m){
+    inner+="<p style='margin-bottom:12px'><b>"+esc(m.line)+"</b></p>"+
+      "<p>① 大白话解释："+esc(m.item.plain)+"</p>"+
+      "<p>② 组合含义："+esc(m.item.combos)+"</p>"+
+      "<p>③ 复查/专科："+esc(m.item.review)+"</p>"+
+      "<p>④ 不必焦虑："+esc(m.item.calm)+"</p>";
+  });
+  if(unmatched.length){
+    inner+="<p style='margin-top:10px;color:var(--coral)'><b>以下条目未匹配知识库，请务必让医生解释：</b>"+esc(unmatched.join(" ｜ "))+"</p>";
+  }
+  h+=secHTML(1,"逐项大白话解释 + 组合提示",inner);
+  h+=secHTML(2,"哪些需要复查 / 哪些需要专科","<p>"+esc("原则：明显偏离参考范围、或多项指标同时异常、或与既往对比明显变化的，优先复查并由专科评估；单项轻度波动先复查，不必直接“对号入座”。")+"</p>");
+  h+=secHTML(3,"哪些只是参考范围波动，不必焦虑","<p>"+esc("参考范围覆盖 95% 的健康人群，本身就允许 5% 的正常人“超出”一点；体检前饮食、睡眠、运动、情绪都会影响部分指标。轻度、孤立、可解释的波动，复查即可。")+"</p>");
+  h+=secHTML(4,"就诊提问清单",ulHTML([
+    "这几个异常项里，哪个最值得优先处理？",
+    "哪些需要复查、隔多久复查？",
+    "结合我的年龄和既往史，我需要调整生活方式里的哪些习惯？"
+  ]));
+  var kws=matched.map(function(m){return m.item.name;}).slice(0,4);
+  if(kws.length===0)kws=["体检"];
+  h+=veriBox("体检指标对应的权威条目可在默沙东检索核对；数值解读请以开具报告的医生为准。",kws);
+  return h;
+}
+
+/* 模板C：防焦虑螺旋 */
+function reportC(d){
+  var txt=(d.worry||"")+" "+(d.symptom||"");
+  var wrong=[];
+  ABSOLUTE_WORDS.forEach(function(w){
+    if(txt.indexOf(w[0])>-1)wrong.push("<li>"+esc(w[0]+"：")+esc(w[1])+"</li>");
+  });
+  var h="";
+  h+='<div class="user-summary"><b>你担心的：</b>'+esc(d.worry||"")+(d.symptom?"<br><b>身体感受：</b>"+esc(d.symptom):"")+"<br><b>搜索频率：</b>"+esc(d.freq||"—")+"　<b>搜索后：</b>"+esc(d.feel||"—")+"</div>";
+  h+=secHTML(1,"反向校准：哪些表现其实偏常见、偏低危","<p>"+esc(LOWRISK_COMMON)+"</p><p style='margin-top:8px'>你提到的「"+esc((d.symptom||d.worry||"该感受").slice(0,40))+"」在缺乏危险信号时，优先按常见、功能性的方向理解；具体判断仍需医生查体。</p>");
+  h+=secHTML(2,"哪些才真正该警惕（不是安慰你，是分层）","<div class='redline'>"+ulHTML(REDFLAGS.map(function(x){return esc(x);}),"flag-list")+"</div><p style='margin-top:8px'>你的描述中"+(txt.indexOf("痛")>-1||txt.indexOf("麻")>-1?"有疼痛/麻木类感受，":"未明显提及上述危险信号，")+"若出现其中任何一项，请直接就医而不是继续搜索。</p>");
+  h+=secHTML(3,"你的提问里有没有错误前提？",wrong.length?'<ul>'+wrong.join("")+'</ul>':"<p>未检测到明显的绝对化或灾难化表述，继续保持“我可能想严重了”的觉察本身就是好的信号。</p>");
+  h+=secHTML(4,"分层风险小结","<ul><li><b>低危层：</b>症状短暂、可解释、无危险信号 → 先观察 1~2 周，调整作息，不反复搜索。</li><li><b>中危层：</b>症状持续存在、影响睡眠/工作/情绪 → 预约全科/内科或相应专科做一次规范评估。</li><li><b>高危层：</b>出现红旗信号中的任何一条 → 立即急诊，不要等待。</li><li><b>情绪层：</b>搜索后持续更焦虑、停不下来，本身就是需要处理的信号，可考虑心理科/精神科评估，这与“身体有没有病”是两回事。</li></ul>");
+  h+=veriBox("把担忧拆成“身体信号”与“对信号的反应”两部分，前者查默沙东，后者找专业人士。",[(d.symptom||d.worry||"症状").slice(0,20)]);
+  return h;
+}
+
+/* 模板D：用药冲突 */
+function reportD(d){
+  var using=(d.using||"").split(/[,，、\s]+/).filter(Boolean);
+  var adding=(d.adding||"").split(/[,，、\s]+/).filter(Boolean);
+  function resolveName(input){
+    var lower=input.toLowerCase();
+    for(var i=0;i<DRUG_ALIASES.length;i++){
+      var d=DRUG_ALIASES[i];
+      for(var k=0;k<d.aliases.length;k++){
+        if(lower.indexOf(d.aliases[k].toLowerCase())>-1)return d.drug;
+      }
+    }
+    return null;
+  }
+  var usingCanon=using.map(function(u){return {raw:u,canon:resolveName(u)};});
+  var addingCanon=adding.map(function(u){return {raw:u,canon:resolveName(u)};});
+  var allCanon=[];
+  usingCanon.concat(addingCanon).forEach(function(x){if(x.canon&&allCanon.indexOf(x.canon)<0)allCanon.push(x.canon);});
+
+  var same=[];
+  allCanon.forEach(function(c){
+    var cnt=0;
+    usingCanon.concat(addingCanon).forEach(function(x){if(x.canon===c)cnt++;});
+    var hasUsing=usingCanon.some(function(x){return x.canon===c;});
+    var hasAdding=addingCanon.some(function(x){return x.canon===c;});
+    if(hasUsing&&hasAdding&&cnt>=2)same.push(c);
+  });
+
+  var tips=[];
+  DRUG_INTERACTIONS.forEach(function(it){
+    var inAll=it.pair.every(function(p){
+      return allCanon.some(function(c){return c.indexOf(p)>-1||p.indexOf(c)>-1;});
+    });
+    if(inAll)tips.push("<li><b>"+esc(it.pair.join(" + "))+"：</b>"+esc(it.tip)+"</li>");
+  });
+
+  var h="";
+  h+='<div class="user-summary"><b>正在用：</b>'+esc(d.using||"—")+"<br><b>想加：</b>"+esc(d.adding||"—")+(d.duration?"<br><b>时长：</b>"+esc(d.duration):"")+(d.renal?"<br><b>肝肾功能：</b>"+esc(d.renal):"")+"</div>";
+  h+=secHTML(1,"通用名 / 商品名是否同一成分",function(){
+    if(same.length){return "<div class='redline'>⚠ 检测到可能为同一成分：<b>"+esc(same.join("、"))+"</b>。先确认它们是不是同一成分的不同品牌，避免重复用药。</div>";}
+    var known=allCanon.length>0?"已识别成分："+esc(allCanon.join("、"))+"；":"未能从常见成分库中识别（库覆盖常见药与保健品，未覆盖≠无风险）。";
+    return "<p>"+esc(known)+"</p>";
+  }());
+  h+=secHTML(2,"相互作用 / 禁忌 / 肝肾功能注意点",function(){
+    if(tips.length)return "<ul>"+tips.join("")+"</ul>";
+    return "<p>未匹配到常见相互作用条目（知识库仅覆盖高频组合，未匹配不代表绝对安全）。</p><p style='margin-top:6px'>肝肾功能异常者，任何新药/保健品都应在医生指导下评估剂量与禁忌。</p>";
+  }());
+  h+=secHTML(3,"必须让医生 / 药师确认的信息","<ul>"+
+    "<li>两份药单是否含同一成分（含不同商品名）——药师可查成分表</li>"+
+    "<li>新加药物在<a href='https://www.msdmanuals.cn/' target='_blank' rel='noopener' style='text-decoration:underline'>默沙东手册</a>中的相互作用章节</li>"+
+    "<li>你的肝肾功能、年龄与基础病是否影响该药代谢</li>"+
+    "<li>备孕/怀孕/哺乳状态（如有）必须主动说明</li>"+
+    "<li>不要自行停用现有药物或调整剂量；换药/加药决定由医生做出</li></ul>");
+  var kws=[];
+  allCanon.slice(0,2).forEach(function(c){kws.push(c+" 药物相互作用");});
+  using.concat(adding).slice(0,3).forEach(function(u){if(kws.length<4)kws.push(u);});
+  h+=veriBox("药物条目与相互作用可在默沙东检索核对；处方调整请以医生/药师为准。",kws);
+  return h;
+}
+
+function renderReport(t,d){
+  var body="";
+  if(t.key==="A")body=reportA(d);
+  else if(t.key==="B")body=reportB(d);
+  else if(t.key==="C")body=reportC(d);
+  else body=reportD(d);
+  return '<div class="report"><div class="report-head"><h2>'+t.title+' · 整理稿</h2><span class="tag '+t.tagCls+'">'+t.tag+'</span></div>'+body+
+    '<div style="margin-top:14px;text-align:center"><button class="btn btn-ghost" onclick="backTpl()">返回重选模板</button></div></div>';
+}
+function backTpl(){
+  document.getElementById("step-report").style.display="none";
+  document.getElementById("step-form").style.display="none";
+  document.getElementById("step-tpl").style.display="block";
+  document.getElementById("step-tpl").scrollIntoView({behavior:"smooth"});
+}
+window.backTpl=backTpl;
+
+/* ---------- 自评 ---------- */
+var SELF_ITEMS=[
+  {d:"过度关注",q:"当我出现一点身体不适时，会反复在网上搜索相关症状"},
+  {d:"过度关注",q:"即使没有不舒服，我也会不由自主地搜索某些疾病的症状"},
+  {d:"过度关注",q:"搜索健康信息占据了我每天不少的时间"},
+  {d:"搜索焦虑",q:"搜索之后，我反而更担心自己的健康状况"},
+  {d:"搜索焦虑",q:"看到搜索结果后，我会反复确认、再次搜索以求安心"},
+  {d:"搜索焦虑",q:"搜索到的严重疾病信息会在脑海里反复出现"},
+  {d:"寻求帮助",q:"我会多次向家人或朋友转述我在网上看到的健康信息"},
+  {d:"寻求帮助",q:"我会带着网上查到的内容去问医生，即使刚做过检查"},
+  {d:"寻求帮助",q:"我会在不同网站间反复比对，希望找到“确定”的答案"},
+  {d:"负面干扰",q:"搜索健康信息已经影响我的工作、学习或睡眠"},
+  {d:"负面干扰",q:"因为怕查出“坏消息”，我有时回避就医，却停不下搜索"},
+  {d:"负面干扰",q:"健康焦虑让我比过去更频繁地预约或咨询医疗服务"}
+];
+var SELF_OPTS=["从不","很少","有时","经常","总是"];
+(function(){
+  var box=document.getElementById("selfQs");
+  box.innerHTML=SELF_ITEMS.map(function(it,i){
+    return '<div class="self-q"><div class="q-label">'+(i+1)+". "+esc(it.q)+'<span class="q-dim">'+it.d+"</span></div><div class='self-opts'>"+
+      SELF_OPTS.map(function(o,oi){
+        return '<button type="button" data-idx="'+i+'" data-val="'+(oi+1)+'" onclick="selfPick(this)">'+o+'</button>';
+      }).join("")+'</div></div>';
+  }).join("");
+})();
+function selfPick(btn){
+  var box=btn.parentNode;
+  box.querySelectorAll("button").forEach(function(b){b.classList.remove("sel");});
+  btn.classList.add("sel");
+  var idx=btn.dataset.idx;
+  box.dataset.val=btn.dataset.val;
+}
+window.selfPick=selfPick;
+function resetSelf(){
+  document.querySelectorAll("#selfQs .self-opts").forEach(function(box){box.dataset.val="";box.querySelectorAll("button").forEach(function(b){b.classList.remove("sel");});});
+  document.getElementById("selfResult").innerHTML="";
+}
+window.resetSelf=resetSelf;
+function calcSelf(){
+  var scores={over:0,anx:0,help:0,dis:0};var names=["over","anx","help","dis"];
+  var boxes=document.querySelectorAll("#selfQs .self-opts");
+  var missing=false;
+  boxes.forEach(function(box,idx){
+    var v=parseInt(box.dataset.val||"0",10);
+    if(!v){missing=true;return;}
+    var dim=SELF_ITEMS[idx].d;
+    if(dim==="过度关注")scores.over+=v;
+    else if(dim==="搜索焦虑")scores.anx+=v;
+    else if(dim==="寻求帮助")scores.help+=v;
+    else scores.dis+=v;
+  });
+  if(missing){alert("还有题目未作答，请补全后再看结果。");return;}
+  var total=scores.over+scores.anx+scores.help+scores.dis;
+  var dimLabel={over:"过度关注",anx:"搜索焦虑",help:"寻求帮助",dis:"负面干扰"};
+  var verdict;
+  if(total<=24){verdict="当前自评总分较低：你的「搜索—焦虑」模式不明显。保持信息来源可靠、注意别被单条结果带节奏即可。";}
+  else if(total<=36){verdict="自评总分中等：存在一定程度的网络疑病倾向。建议：给搜索设上限、只看权威来源、把担忧写下来带去就诊；若搜索后持续更焦虑，可预约心理科/精神科聊聊。";}
+  else if(total<=48){verdict="自评总分偏高：搜索与焦虑的循环已经比较明显，甚至可能开始影响生活。强烈建议：（1）暂停症状类搜索 1~2 周；（2）做一次规范体检或专科就诊，用事实替代猜测；（3）寻求心理专业评估——这和在不在生病是两件事。";}
+  else{verdict="自评总分很高：网络疑病行为可能已显著影响你的情绪与功能。请优先联系心理科/精神科或学校心理中心做正式评估，同时处理身体担忧——两条线都要走，不要只靠搜索。";}
+  var cards=names.map(function(n){
+    return '<div class="score-card"><b>'+scores[n]+'</b><span>'+dimLabel[n]+'（3~15）</span></div>';
+  }).join("");
+  document.getElementById("selfResult").innerHTML=
+    '<div class="self-result"><div class="self-score">'+cards+
+    '<div class="score-card" style="border-color:var(--coral)"><b style="color:var(--coral)">'+total+'</b><span>总分（12~60）</span></div></div>'+
+    '<div class="self-verdict"><b>解读（仅供自我了解）：</b><p style="margin-top:6px">'+verdict+'</p>'+
+    '<p style="margin-top:10px;font-size:12.5px;color:var(--ink-3)">本自评参考简式网络疑病量表（CSS-12）四维度结构自编，未经正式信效度检验，不构成诊断或医学评估。偏高的维度可以成为你和专业人士讨论的起点。</p></div></div>';
+}
+window.calcSelf=calcSelf;
+
+/* ---------- 来源列表 ---------- */
+var SOURCES=[
+  {c:"丁佳丽, 杨智辉. 网络疑病症: 概念界定、影响因素与干预方法[J]. 中国全科医学, 2015, 18(16): 1984-1988.",j:"概念、成因（六因素）、三层干预的基础框架"},
+  {c:"金童林, 乌云特娜, 杨雪, 等. 中文版简式网络疑病量表测评大学生群体的信度与效度[J]. 中国临床心理学杂志, 2020, 28(2).",j:"测量评估：中文版 CCSS-12 信效度、网络疑病流行数据"},
+  {c:"肖鹏, 张雨龙. “久搜何以成疾”: 健康信息过载对网络疑病症的影响机制[J]. 新闻记者, 2025(2).",j:"机制：信息过载→问题性网络使用/心理不适→网络疑病；电子健康素养调节"},
+  {c:"李少华. 基于ISM-MICMAC的网络疑病症影响因素研究[D]. 2023.",j:"影响因素分层模型（根源/中间/直接层）、驱动力-依赖性分类、治理建议"},
+  {c:"Menon V, et al. Cyberchondria: conceptual relation with health anxiety, assessment, management and prevention[J]. Asian Journal of Psychiatry, 2020, 53: 102225.",j:"英文综述：评估工具、CBT/iCBT 证据、预防（减少危害）策略"},
+  {c:"彭小青, 陈阳, 欧阳威, 等. 网络疑病症: 信息时代下的“新兴风险”[J]. 中国临床心理学杂志, 2020, 28(2).",j:"概念与“新兴风险”定位、评估工具梳理"},
+  {c:"许丹阳, 丁佳丽, 杨智辉. 网络疑病症发生机制及影响的质性研究[J]. 中国全科医学, 2018, 21(22): 2755-2759.",j:"质性视角：发生机制与影响"},
+  {c:"王文韬, 等. 网络健康焦虑的成因与启示: 内容分析与模型构建[J].",j:"成因模型与平台治理启示"},
+  {c:"金燕, 等. 在线健康信息质量如何引发网络疑病症——感知不确定性和健康焦虑的多重中介作用[J].",j:"信息质量→感知不确定性→健康焦虑→网络疑病路径"},
+  {c:"王浩宇, 等. 困顿还是回避? 健康信息过载与网络疑病症间的双重路径——反刍思考与健康信息回避的中介效应[J].",j:"过载的双重路径：反刍思考与信息回避"},
+  {c:"杨炀. 基于生态系统理论的青少年心理问题网络疑病症形成机制研究[D].",j:"生态系统理论视角的青少年网络疑病机制"},
+  {c:"周依萌. “疾病想象”为何失控: 基于扎根理论的小红书用户网络疑病症影响因素研究[J].",j:"社交媒体（小红书）情境的扎根理论因素"},
+  {c:"耿彤. 在线信息对青年群体网络疑病症的影响研究——基于S-O-R框架模型的分析[J].",j:"S-O-R 框架：在线信息刺激→有机体→反应"},
+  {c:"McElroy E, Shevlin M. The development and initial validation of the Cyberchondria Severity Scale (CSS)[J]. Journal of Anxiety Disorders, 2014, 28(2): 259-265.",j:"CSS-33 原始量表编制与验证"},
+  {c:"McElroy E, et al. The CSS-12: Development and Validation of a Short-Form Version of the Cyberchondria Severity Scale[J]. Cyberpsychology, Behavior, and Social Networking, 2019, 22(5).",j:"CSS-12 简式量表编制与验证"}
+];
+(function(){
+  var box=document.getElementById("sourceList");
+  box.innerHTML=SOURCES.map(function(s,i){
+    return '<div class="source-item"><div class="sn">'+(i+1)+'</div><div><p>'+esc(s.c)+'</p><div class="j">用途：'+esc(s.j)+'</div></div></div>';
+  }).join("");
+})();
+
+})();
+</script>
+</body>
+</html>
